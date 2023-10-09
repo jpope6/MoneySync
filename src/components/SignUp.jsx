@@ -1,14 +1,25 @@
 import React, { useState } from "react";
 import Input from "./Input";
-import { auth } from "../firebase";
+import SignForm from "./SignForm";
+import { auth, db } from "../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import { Link, useNavigate } from "react-router-dom";
+import { doc, setDoc } from "firebase/firestore";
+import { AuthContext } from "../context/AuthContext";
+import { UserContext } from "../context/UserContext";
+import Spinner from "./Spinner";
 
+import '../styles/signin.css';
 
 const SignUp = () => {
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+    const [authContext, setAuth] = useState(AuthContext);
+    const [user, setUser] = useState(UserContext);
+    const [loading, setLoading] = useState('');
 
     const validateEmail = (email) => {
         const regex =
@@ -42,9 +53,28 @@ const SignUp = () => {
         } else {
             createUserWithEmailAndPassword(auth, email, password)
                 .then((userCredentials) => {
+                    setLoading(true);
                     console.log(userCredentials);
-                    setEmail('');
-                    setPassword('');
+
+                    const user = userCredentials.user;
+                    const userDocRef = doc(db, 'users', user.uid);
+
+                    const userData = {
+                        email: user.email
+                    };
+
+                    setDoc(userDocRef, userData)
+                        .then(() => {
+                            console.log('User document created successfully');
+                            localStorage.setItem("auth", JSON.stringify(true));
+                            localStorage.setItem("user", JSON.stringify(userCredentials));
+                            setUser(userCredentials);
+                            setAuth(true);
+                            navigate('/home');
+                        })
+                        .catch((error) => {
+                            console.error('Error creating user document:', error);
+                        });
                 })
                 .catch((error) => {
                     console.log(error);
@@ -55,37 +85,54 @@ const SignUp = () => {
                         setError('An error occered during sign in.');
                     }
                 })
+
+            setLoading(false);
         }
     };
 
     return (
-        <div className="sign-in-container">
-            <form onSubmit={signUp}>
-                <h1>Create an account</h1>
-                <Input
-                    type="text"
-                    placeHolder={"Email"}
-                    value={email}
-                    callback={handleEmailChange}
-                    error={error}
-                />
-                <Input
-                    type="password"
-                    placeHolder={"Password"}
-                    value={password}
-                    callback={handlePasswordChange}
-                    error={error}
-                />
-                <Input
-                    type="password"
-                    placeHolder={"Confirm Password"}
-                    value={confirmPassword}
-                    callback={handleConfirmPasswordChange}
-                    error={error}
-                />
-                <p className="error-message">{error}</p>
-                <button type="submit">Sign Up</button>
-            </form>
+        <div className="sign-in">
+            <SignForm
+                title={'Create an Account'}
+                subheading={'Sign up to start tracking your finances.'}>
+
+                <form className="form" onSubmit={signUp}>
+                    <div className="sign-inputs">
+                        <Input
+                            type="text"
+                            placeHolder={"Email"}
+                            value={email}
+                            callback={handleEmailChange}
+                            error={error}
+                        />
+                        <Input
+                            type="password"
+                            placeHolder={"Password"}
+                            value={password}
+                            callback={handlePasswordChange}
+                            error={error}
+                        />
+                        <Input
+                            type="password"
+                            placeHolder={"Confirm Password"}
+                            value={confirmPassword}
+                            callback={handleConfirmPasswordChange}
+                            error={error}
+                        />
+                    </ div>
+                    <p className="error-message">{error}</p>
+
+                    <button className="sign-button" type="submit">
+                        {loading ? <Spinner /> : 'Sign Up'}
+                    </button>
+                </form>
+                <div className="sign-additional">
+                    <span>Already have an account? </span>
+                    <Link to="/signin" className="sign-link">
+                        Sign In.
+                    </Link>
+                </div>
+            </SignForm>
         </div>
     );
 };

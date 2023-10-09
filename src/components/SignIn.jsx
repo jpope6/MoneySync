@@ -2,12 +2,23 @@ import React, { useState } from "react";
 import Input from "./Input";
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import SignForm from "./SignForm";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { UserContext } from "../context/UserContext";
+
+import '../styles/signin.css';
+import Spinner from "./Spinner";
 
 
 const SignIn = () => {
+    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [authContext, setAuth] = useState(AuthContext);
+    const [user, setUser] = useState(UserContext);
+    const [loading, setLoading] = useState('');
 
     const validateEmail = (email) => {
         const regex =
@@ -35,9 +46,14 @@ const SignIn = () => {
         } else if (email && password) {
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredentials) => {
+                    setLoading(true);
                     console.log(userCredentials);
-                    setEmail('');
-                    setPassword('');
+
+                    localStorage.setItem("auth", JSON.stringify(true));
+                    localStorage.setItem("user", JSON.stringify(userCredentials));
+                    setUser(userCredentials);
+                    setAuth(true);
+                    navigate('/home');
                 })
                 .catch((error) => {
                     console.log(error);
@@ -52,26 +68,41 @@ const SignIn = () => {
     };
 
     return (
-        <div className="sign-in-container">
-            <form onSubmit={signIn}>
-                <h1>Log in</h1>
-                <Input
-                    type="text"
-                    placeHolder={"Email"}
-                    value={email}
-                    callback={handleEmailChange}
-                    error={error}
-                />
-                <Input
-                    type="password"
-                    placeHolder={"Password"}
-                    value={password}
-                    callback={handlePasswordChange}
-                    error={error}
-                />
-                <p className="error-message">{error}</p>
-                <button type="submit">Log In</button>
-            </form>
+
+        <div className="sign-in">
+            <SignForm
+                title={'Sign In'}
+                subheading={'Sign in to start tracking your finances.'}>
+
+                <form className="form" onSubmit={signIn}>
+                    <div className="sign-inputs">
+                        <Input
+                            type="text"
+                            placeHolder={"Email"}
+                            value={email}
+                            callback={handleEmailChange}
+                            error={error}
+                        />
+                        <Input
+                            type="password"
+                            placeHolder={"Password"}
+                            value={password}
+                            callback={handlePasswordChange}
+                            error={error}
+                        />
+                    </div>
+                    <p className="error-message">{error}</p>
+                    <button className="sign-button" type="submit">
+                        {loading ? <Spinner /> : 'Log in'}
+                    </button>
+                </form>
+                <div className="sign-additional">
+                    <span>Not a member? </span>
+                    <Link to="/signup" className="sign-link">
+                        Sign Up.
+                    </Link>
+                </div>
+            </SignForm>
         </div>
     );
 };

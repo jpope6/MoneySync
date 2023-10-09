@@ -1,0 +1,17 @@
+.sign-in {
+	background-color: var(--primary-background-color);
+	height: 100vh;
+	padding: 2rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.sign-form-container {
+	height: 100%;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}

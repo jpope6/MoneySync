@@ -1,11 +1,11 @@
 :root {
-	--primary-background-color: #13192b;
-	--secondary-background-color: #181e30;
+	--primary-background-color: #242582;
+	--secondary-background-color: #2F2FA2;
 	--secondary-color: #2f3444;
-	--accent-color: #d20002;
+	--accent-color: #F64C72;
 	--text-color-selected: #fff;
-	--text-color-secondary: #aaaaae;
-	--text-color-detail: #646469;
+	--text-color-secondary: white;
+	--text-color-detail: #aaaaae;
 	--star-color: #ffda58;
 	--font-primary: "Roboto", sans-serif;
 	--font-secondary: "Nunito", sans-serif;
