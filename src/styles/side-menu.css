@@ -1,0 +1,40 @@
+.menu {
+	background-color: var(--primary-background-color);
+	display: flex;
+	flex-direction: column;
+	padding: 2rem;
+}
+
+.menu-list {
+	margin: 0;
+	padding: 0;
+	margin-top: 50px;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+}
+
+.menu-item {
+	padding: 5px 2rem;
+	margin-bottom: 16px;
+	color: var(--text-color-detail);
+	font-weight: 500;
+	font-size: 22px;
+	cursor: pointer;
+	transition: all 0.1s ease-in-out;
+	list-style: none;
+}
+
+.menu-item:hover {
+	filter: brightness(1.4);
+}
+
+.selected-menu-item {
+	color: var(--text-color-selected) !important;
+	background: rgb(210, 0, 2);
+	background: linear-gradient(
+		90deg,
+		rgba(210, 0, 2, 1) -50%,
+		rgba(19, 25, 43, 1) 100%
+	);
+}

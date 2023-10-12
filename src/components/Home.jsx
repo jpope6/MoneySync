@@ -1,4 +1,5 @@
 import React from "react";
+import SideMenu from "./SideMenu";
 import Header from "./Header";
 import Graph from "./Graph";
 
@@ -8,8 +9,9 @@ const Home = () => {
 
     return (
         <div className="home">
-            <Header />
+            <SideMenu />
             <div className="main-content">
+                <Header />
                 <Graph />
             </div>
         </div>

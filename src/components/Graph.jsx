@@ -12,45 +12,31 @@ import {
 
 const data = [
     {
-        name: "Page A",
-        uv: 4000,
-        pv: 2400,
+        date: "10/5/23",
         amt: 2400
     },
     {
-        name: "Page B",
-        uv: 3000,
-        pv: 1398,
+        date: "10/6/23",
         amt: 2210
     },
     {
-        name: "Page C",
-        uv: 2000,
-        pv: 9800,
+        date: "10/7/23",
         amt: 2290
     },
     {
-        name: "Page D",
-        uv: 2780,
-        pv: 3908,
+        date: "10/8/23",
         amt: 2000
     },
     {
-        name: "Page E",
-        uv: 1890,
-        pv: 4800,
+        date: "10/9/23",
         amt: 2181
     },
     {
-        name: "Page F",
-        uv: 2390,
-        pv: 3800,
+        date: "10/10/23",
         amt: 2500
     },
     {
-        name: "Page G",
-        uv: 3490,
-        pv: 4300,
+        date: "10/11/23",
         amt: 2100
     }
 ];
@@ -71,16 +57,18 @@ const Graph = () => {
                 <XAxis
                     dataKey="date"
                 />
-                <YAxis />
+                <YAxis
+                    domain={[1900, 2600]}
+                />
                 <Tooltip />
                 <Legend />
                 <Line
                     type="monotone"
-                    dataKey="pv"
-                    stroke="#8884d8"
+                    dataKey="amt"
+                    stroke="#F64C72"
                     activeDot={{ r: 8 }}
+                    strokeWidth={3}
                 />
-                <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
             </LineChart>
         </ResponsiveContainer >
     );
