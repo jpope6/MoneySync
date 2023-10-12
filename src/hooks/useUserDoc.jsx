@@ -5,7 +5,7 @@ import { UserContext } from "../context/UserContext";
 
 export function useUserData() {
     const [user, setUser] = useContext(UserContext);
-    const [userData, setUserData] = useState(null);
+    const [userDoc, setUserDoc] = useState(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -15,8 +15,7 @@ export function useUserData() {
                     const userDoc = await getDoc(userRef);
 
                     if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        setUserData(userData);
+                        setUserDoc(userDoc);
                     } else {
                         console.log("User document not found in Firestore");
                     }
@@ -29,5 +28,5 @@ export function useUserData() {
         fetchUserData();
     }, [user.user]);
 
-    return userData;
+    return userDoc;
 }
