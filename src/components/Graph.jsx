@@ -43,7 +43,7 @@ const data = [
 
 const Graph = () => {
     return (
-        <ResponsiveContainer width='90%' height={700} >
+        <ResponsiveContainer width='100%' height={700}>
             <LineChart
                 data={data}
                 margin={{

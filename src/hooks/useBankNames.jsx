@@ -47,7 +47,7 @@ export function useUserBanks() {
 
     useEffect(() => {
         if (userDoc) {
-            fetchUserBanks()
+            fetchUserBanks();
         }
     }, [userDoc, banksCollection]);
 
