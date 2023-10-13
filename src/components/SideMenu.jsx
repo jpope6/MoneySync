@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from 'react-modal';
+
+import { useUserBanks } from "../hooks/useBankNames";
 
 import "../styles/side-menu.css";
 
@@ -7,9 +9,10 @@ Modal.setAppElement("#root");
 
 
 const SideMenu = () => {
-    const [menuItems, setMenuItems] = useState([]);
+    const { banks, addBank } = useUserBanks();
     const [modalOpen, setModalOpen] = useState(false);
-    const [inputValue, setInputValue] = useState('');
+    const [bankName, setBankName] = useState('');
+    const [currentSelection, setCurrentSelection] = useState('All');
 
     const handleModalOpen = () => {
         setModalOpen(true);
@@ -19,15 +22,19 @@ const SideMenu = () => {
         setModalOpen(false);
     }
 
-    const handleInputChange = (e) => {
-        setInputValue(e.target.value);
+    const handleItemClick = (menuItem) => {
+        setCurrentSelection(menuItem);
     }
 
-    const handleModalSubmit = () => {
-        const menuItemsCopy = [...menuItems];
-        menuItemsCopy.push(inputValue);
-        setMenuItems(menuItemsCopy);
-        setInputValue('');
+    const handleInputChange = (e) => {
+        setBankName(e.target.value);
+    }
+
+    const handleModalSubmit = async (e) => {
+        e.preventDefault();
+
+        addBank(bankName);
+        setBankName('');
         setModalOpen(false);
     }
 
@@ -35,12 +42,16 @@ const SideMenu = () => {
         <div className="menu">
             <button className="menu-button" onClick={handleModalOpen}>Add bank</button>
             <ul className="menu-list">
-                {menuItems.map((menuItem, index) => (
+                <li className={`menu-item ${currentSelection === 'All' ? 'selected-menu-item' : ''} `}
+                    onClick={() => handleItemClick('All')}
+                >All</li>
+                {banks.map((bankName, index) => (
                     <li
                         key={index}
-                        className='menu-item'
+                        className={`menu-item ${currentSelection === bankName ? 'selected-menu-item' : ''} `}
+                        onClick={() => handleItemClick(bankName)}
                     >
-                        {menuItem}
+                        {bankName}
                     </li>
                 ))}
 

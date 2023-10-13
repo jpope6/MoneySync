@@ -2,7 +2,8 @@
 	background-color: var(--primary-background-color);
 	display: flex;
 	flex-direction: column;
-	padding: 2rem;
+	width: 250px;
+	padding-top: 2rem;
 }
 
 .menu-list {
@@ -15,6 +16,7 @@
 }
 
 .menu-item {
+	width: 100%;
 	padding: 5px 2rem;
 	margin-bottom: 16px;
 	color: var(--text-color-detail);
@@ -23,6 +25,9 @@
 	cursor: pointer;
 	transition: all 0.1s ease-in-out;
 	list-style: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .menu-item:hover {
@@ -34,7 +39,7 @@
 	background: rgb(210, 0, 2);
 	background: linear-gradient(
 		90deg,
-		rgba(210, 0, 2, 1) -50%,
-		rgba(19, 25, 43, 1) 100%
+		var(--accent-color) -50%,
+		var(--primary-background-color) 100%
 	);
 }

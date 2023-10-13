@@ -3,7 +3,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { UserContext } from "../context/UserContext";
 
-export function useUserData() {
+export function useUserDoc() {
     const [user, setUser] = useContext(UserContext);
     const [userDoc, setUserDoc] = useState(null);
 
@@ -26,7 +26,7 @@ export function useUserData() {
         };
 
         fetchUserData();
-    }, [user.user]);
+    }, [user]);
 
     return userDoc;
 }
