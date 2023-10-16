@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Input from "./Input";
 import SignForm from "./SignForm";
 import { auth, db } from "../firebase";
@@ -17,8 +17,8 @@ const SignUp = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
-    const [authContext, setAuth] = useState(AuthContext);
-    const [user, setUser] = useState(UserContext);
+    const [authContext, setAuth] = useContext(AuthContext);
+    const [user, setUser] = useContext(UserContext);
     const [loading, setLoading] = useState('');
 
     const validateEmail = (email) => {
@@ -60,7 +60,8 @@ const SignUp = () => {
                     const userDocRef = doc(db, 'users', user.uid);
 
                     const userData = {
-                        email: user.email
+                        email: user.email,
+                        bankArray: []
                     };
 
                     setDoc(userDocRef, userData)

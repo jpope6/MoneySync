@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Input from "./Input";
 import { auth } from "../firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -16,8 +16,8 @@ const SignIn = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [authContext, setAuth] = useState(AuthContext);
-    const [user, setUser] = useState(UserContext);
+    const [authContext, setAuth] = useContext(AuthContext);
+    const [user, setUser] = useContext(UserContext);
     const [loading, setLoading] = useState('');
 
     const validateEmail = (email) => {
@@ -47,7 +47,6 @@ const SignIn = () => {
             signInWithEmailAndPassword(auth, email, password)
                 .then((userCredentials) => {
                     setLoading(true);
-                    console.log(userCredentials);
 
                     localStorage.setItem("auth", JSON.stringify(true));
                     localStorage.setItem("user", JSON.stringify(userCredentials));
