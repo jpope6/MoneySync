@@ -61,7 +61,6 @@ const SignUp = () => {
 
                     const userData = {
                         email: user.email,
-                        bankArray: []
                     };
 
                     setDoc(userDocRef, userData)

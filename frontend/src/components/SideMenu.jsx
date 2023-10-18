@@ -9,10 +9,11 @@ Modal.setAppElement("#root");
 
 
 const SideMenu = () => {
-    const { banks, addBank } = useUserBanks();
+    const { addBank, fetchBankNames } = useUserBanks();
     const [modalOpen, setModalOpen] = useState(false);
     const [bankName, setBankName] = useState('');
     const [currentSelection, setCurrentSelection] = useState('All');
+    const [bankNames, setBankNames] = useState([]);
 
     const handleModalOpen = () => {
         setModalOpen(true);
@@ -33,10 +34,30 @@ const SideMenu = () => {
     const handleModalSubmit = async (e) => {
         e.preventDefault();
 
-        addBank(bankName);
-        setBankName('');
-        setModalOpen(false);
+        try {
+            await addBank(bankName);
+            setBankNames(bankNames => [...bankNames, bankName]);
+            setBankName('');
+            setModalOpen(false);
+        } catch (error) {
+            // Handle the error, e.g., show an error message to the user
+            console.error("Error adding a bank:", error);
+        }
     }
+
+    useEffect(() => {
+        async function fetchBanks() {
+            try {
+                const fetchedBankNames = await fetchBankNames();
+                setBankNames(fetchedBankNames);
+            } catch (error) {
+                // Handle the error, e.g., show an error message to the user
+                console.error("Error fetching bank names:", error);
+            }
+        }
+        fetchBanks();
+    }, []);
+
 
     return (
         <div className="menu">
@@ -45,7 +66,7 @@ const SideMenu = () => {
                 <li className={`menu-item ${currentSelection === 'All' ? 'selected-menu-item' : ''} `}
                     onClick={() => handleItemClick('All')}
                 >All</li>
-                {banks.map((bankName, index) => (
+                {bankNames.map((bankName, index) => (
                     <li
                         key={index}
                         className={`menu-item ${currentSelection === bankName ? 'selected-menu-item' : ''} `}
