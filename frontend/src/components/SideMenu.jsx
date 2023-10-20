@@ -1,30 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Modal from 'react-modal';
 
 import { useUserBanks } from "../hooks/useBankNames";
 
 import "../styles/side-menu.css";
+import "../styles/modal.css";
 
 Modal.setAppElement("#root");
 
 
-const SideMenu = () => {
-    const { addBank, fetchBankNames } = useUserBanks();
+const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentSelection }) => {
+    const { addBank } = useUserBanks();
     const [modalOpen, setModalOpen] = useState(false);
+    const [fadeAway, setFadeAway] = useState(false);
     const [bankName, setBankName] = useState('');
-    const [currentSelection, setCurrentSelection] = useState('All');
-    const [bankNames, setBankNames] = useState([]);
 
     const handleModalOpen = () => {
         setModalOpen(true);
     }
 
     const handleModalClose = () => {
-        setModalOpen(false);
+        setFadeAway(true);
+        setTimeout(() => {
+            setModalOpen(false);
+            setFadeAway(false);
+        }, 200);
     }
 
     const handleItemClick = (menuItem) => {
-        setCurrentSelection(menuItem);
+        updateCurrentSelection(menuItem);
     }
 
     const handleInputChange = (e) => {
@@ -36,28 +40,13 @@ const SideMenu = () => {
 
         try {
             await addBank(bankName);
-            setBankNames(bankNames => [...bankNames, bankName]);
+            updateBankNames(bankName);
             setBankName('');
             setModalOpen(false);
         } catch (error) {
-            // Handle the error, e.g., show an error message to the user
             console.error("Error adding a bank:", error);
         }
     }
-
-    useEffect(() => {
-        async function fetchBanks() {
-            try {
-                const fetchedBankNames = await fetchBankNames();
-                setBankNames(fetchedBankNames);
-            } catch (error) {
-                // Handle the error, e.g., show an error message to the user
-                console.error("Error fetching bank names:", error);
-            }
-        }
-        fetchBanks();
-    }, []);
-
 
     return (
         <div className="menu">
@@ -80,8 +69,14 @@ const SideMenu = () => {
 
             <Modal
                 isOpen={modalOpen}
+                className={`modal ${fadeAway ? "fade-away" : ""}`}
+                style={{
+                    overlay: {
+                        background: "rgba(0, 0, 0, 0.7)",
+                    },
+                }}
             >
-                <input type="text" placeholder="Add a bank" onChange={handleInputChange} />
+                <input type="text" placeholder="Add a bank" onChange={handleInputChange} autoFocus />
                 <button type="submit" onClick={handleModalSubmit}>Submit</button>
                 <button className="modal-button" onClick={handleModalClose}>Close Modal</button>
             </Modal>

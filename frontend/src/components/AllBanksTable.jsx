@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react'; // the AG Grid React Component
 
 import 'ag-grid-community/styles/ag-grid.css'; // Core grid CSS, always needed
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Optional theme CSS
 
-const Table = () => {
+const AllBanksTable = () => {
     const gridRef = useRef();
     const [rowData, setRowData] = useState([
         { bank: 'Bank of America', checkings: '1000', savings: '1000' },
@@ -12,14 +12,21 @@ const Table = () => {
         { bank: 'Altura', checkings: '3000', savings: '1700' },
     ]);
 
-    const [columnDefs] = useState([
+    const columnDefs = [
+        { headerCheckboxSelection: true, checkboxSelection: true, maxWidth: 50 },
         { field: 'bank' },
         { field: 'checkings' },
         { field: 'savings' },
-    ]);
+    ];
 
-    const sizeToFit = useCallback(() => {
-        gridRef.current.api.sizeColumnsToFit();
+    const defaultColDef = useMemo(() => {
+        return {
+            flex: 1,
+            minWidth: 180,
+            sortable: true,
+            resizable: true,
+            editable: true,
+        };
     }, []);
 
     const addRow = () => {
@@ -27,23 +34,22 @@ const Table = () => {
         const newBank = { bank: 'Bank', checkings: '100', savings: '200' }
         copy.push(newBank);
         setRowData(copy);
-        sizeToFit();
     }
 
     return (
         <div className="ag-theme-alpine-dark" 
             style={{ width: '100%',  paddingTop: '2rem' }}>
-            <button onClick={addRow}>Push me</button>
+            <button onClick={addRow}>Add Entry</button>
             <AgGridReact
                 ref={gridRef}
                 rowData={rowData}
+                rowSelection='multiple'
                 columnDefs={columnDefs}
-                onGridReady={sizeToFit}
-                onGridSizeChanged={sizeToFit}
+                defaultColDef={defaultColDef}
                 domLayout='autoHeight'
             />
         </div>
     );
 };
 
-export default Table;
+export default AllBanksTable;

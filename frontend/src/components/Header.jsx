@@ -5,7 +5,7 @@ import { UserContext } from "../context/UserContext";
 
 import '../styles/header.css';
 
-const Header = () => {
+const Header = ({ title }) => {
     const navigate = useNavigate();
     const [auth, setAuth] = useContext(AuthContext);
     const [user, setUser] = useContext(UserContext);
@@ -21,7 +21,7 @@ const Header = () => {
 
     return (
         <div className="header">
-            <h1 className="header-title">MoneySync</h1>
+            <h1 className="header-title">{ title === 'All' ? 'All Banks' : title }</h1>
             <button type="button" className="link-button" onClick={handleSignOut}>
                 Sign Out
             </button>
