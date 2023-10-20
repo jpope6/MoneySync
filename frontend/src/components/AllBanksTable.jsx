@@ -29,17 +29,9 @@ const AllBanksTable = () => {
         };
     }, []);
 
-    const addRow = () => {
-        const copy = [...rowData];
-        const newBank = { bank: 'Bank', checkings: '100', savings: '200' }
-        copy.push(newBank);
-        setRowData(copy);
-    }
-
     return (
         <div className="ag-theme-alpine-dark" 
             style={{ width: '100%',  paddingTop: '2rem' }}>
-            <button onClick={addRow}>Add Entry</button>
             <AgGridReact
                 ref={gridRef}
                 rowData={rowData}
