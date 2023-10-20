@@ -2,6 +2,8 @@ import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import Modal from 'react-modal';
 
+import { useUserBanks } from '../hooks/useBankData';
+
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
@@ -10,13 +12,14 @@ import '../styles/modal.css';
 
 Modal.setAppElement("#root");
 
-const BankTable = () => {
+const BankTable = ({ bankName }) => {
     const gridRef = useRef();
     const [modalOpen, setModalOpen] = useState(false);
     const [fadeAway, setFadeAway] = useState(false);
     const [rowData, setRowData] = useState([
         { date: new Date("2023-10-19T00:00:00").toLocaleDateString() },
     ]);
+    const { addBankEntry } = useUserBanks();
     const [date, setDate] = useState(new Date().toJSON().slice(0, 10));
     const [checkings, setCheckings] = useState(0);
     const [savings, setSavings] = useState(0);
@@ -45,7 +48,6 @@ const BankTable = () => {
         const newBank = { bank: 'Bank', checkings: '100', savings: '200' }
         copy.push(newBank);
         setRowData(copy);
-        // sizeToFit();
     }
 
     const handleModalOpen = () => {
@@ -60,17 +62,34 @@ const BankTable = () => {
         }, 200);
     }
 
+    const handleModalSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            await addBankEntry(
+                bankName,
+                date,
+                checkings,
+                savings,
+                other
+            );
+            setModalOpen(false);
+        } catch (error) {
+            console.error("Error adding a bank:", error);
+        }
+    }
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
 
         if (name === 'date') {
             setDate(value);
         } else if (name === 'checkings') {
-            setCheckings(value);
+            setCheckings(parseFloat(value).toFixed(2));
         } else if (name === 'savings') {
-            setSavings(value);
+            setSavings(parseFloat(value).toFixed(2));
         } else if (name === 'other') {
-            setOther(value);
+            setOther(parseFloat(value).toFixed(2));
         }
     }
 
@@ -105,24 +124,24 @@ const BankTable = () => {
 
                 <div className="input-container">
                     <label htmlFor="date-input">Date:</label>
-                    <input type="date" id="date-input" value={date} onChange={handleInputChange} />
+                    <input type="date" name='date' id="date-input" value={date} onChange={handleInputChange} />
                 </div>
 
                 <div className="input-container">
                     <label htmlFor="checkings-input">Checkings:</label>
-                    <input type="number" id="checkings-input" onChange={handleInputChange} />
+                    <input type="number" name='checkings' id="checkings-input" onChange={handleInputChange} />
                 </div>
 
                 <div className="input-container">
                     <label htmlFor="savings-input">Savings:</label>
-                    <input type="number" id="savings-input" onChange={handleInputChange} />
+                    <input type="number" name='savings' id="savings-input" onChange={handleInputChange} />
                 </div>
 
                 <div className="input-container">
                     <label htmlFor="other-input">Other:</label>
-                    <input type="number" id="other-input" onChange={handleInputChange} />
+                    <input type="number" name='other' id="other-input" onChange={handleInputChange} />
                 </div>
-                <button className="modal-button" onClick={handleModalClose}>Add Entry</button>
+                <button className="modal-button" onClick={handleModalSubmit}>Add Entry</button>
             </Modal>
         </div>
     );

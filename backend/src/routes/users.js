@@ -35,11 +35,50 @@ router.get("/get-bank-names", async (req, res) => {
         const userRef = Users.doc(user_id);
         const banksRef = userRef.collection("banks");
         const snapshot = await banksRef.get();
-        const bankNames = snapshot.docs.map((doc) => doc.get("name"));;
+        const bankNames = snapshot.docs.map((doc) => doc.get("name"));
 
         res.status(200).json({ bankNames });
     } catch (e) {
         console.error(e.message);
+        res.status(500).json({ error: "Server error." });
+    }
+});
+
+router.post("/add-bank-entry", async (req, res) => {
+    try {
+        const { user_id, bankName, date, checkingsAmt, savingsAmt, otherAmt } = req.body;
+
+        const userRef = Users.doc(user_id);
+        const banksRef = userRef.collection("banks");
+        const bankQuery = banksRef.where("name", "==", bankName);
+
+        bankQuery.get()
+            .then(async (snapshot) => {
+                if (!snapshot.empty) {
+                    const bankDoc = snapshot.docs[0];
+
+                    const newEntry = {
+                        date,
+                        checkings: checkingsAmt,
+                        savings: savingsAmt,
+                        other: otherAmt,
+                    };
+
+                    await bankDoc.ref.collection("entries").add(newEntry);
+                    res.status(201).json({ message: "Entry added successfully" });
+                } else {
+                    res.status(404).json({ error: "Bank not found" });
+                }
+            })
+            .catch((e) => {
+                console.error(e.message);
+                console.log("here?")
+                res.status(500).json({ error: "Server error." });
+            })
+
+    } catch (e) {
+        console.error(e.message);
+        console.log("here!")
         res.status(500).json({ error: "Server error." });
     }
 });

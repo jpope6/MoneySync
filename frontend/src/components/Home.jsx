@@ -5,7 +5,7 @@ import Graph from "./Graph";
 import AllBanksTable from "./AllBanksTable";
 import BankTable from "./BankTable";
 
-import { useUserBanks } from "../hooks/useBankNames";
+import { useUserBanks } from "../hooks/useBankData";
 
 import '../styles/home.css';
 
@@ -51,7 +51,9 @@ const Home = () => {
                 {currentSelection === 'All' ?
                     <AllBanksTable />
                     :
-                    <BankTable />
+                    <BankTable
+                        bankName={currentSelection}
+                    />
                 }
             </div>
         </div>

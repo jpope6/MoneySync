@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Modal from 'react-modal';
 
-import { useUserBanks } from "../hooks/useBankNames";
+import { useUserBanks } from "../hooks/useBankData";
 
 import "../styles/side-menu.css";
 import "../styles/modal.css";
