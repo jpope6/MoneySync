@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     LineChart,
     Line,
@@ -12,26 +12,77 @@ import {
 
 
 const BankGraph = ({ data }) => {
+    const [accountsVisibility, setAccountsVisibility] = useState({
+        checkings: true,
+        savings: true,
+        other: true,
+    });
+    const [smallestValue, setSmallestValue] = useState(Number.POSITIVE_INFINITY);
+    const [largestValue, setLargestValue] = useState(Number.NEGATIVE_INFINITY);
+    const [yAxisKey, setYAxisKey] = useState(1);
+
+    // Sort the data by date
     data = data.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    let smallest = Number.POSITIVE_INFINITY;
-    let largest = Number.NEGATIVE_INFINITY;
-    data.forEach(item => {
-        let num = Math.min(item.checkings, item.savings, item.other);
-        if (num < smallest) {
-            smallest = num;
-        }
+    useEffect(() => {
+        // Calculate smallestValue and largestValue based on visible series
+        let smallest = Number.POSITIVE_INFINITY;
+        let largest = Number.NEGATIVE_INFINITY;
 
-        num = Math.max(item.checkings, item.savings, item.other);
-        if (num > largest) {
-            largest = num;
-        }
-    })
+        console.log(accountsVisibility);
+
+        data.forEach((item) => {
+            if (accountsVisibility.checkings) {
+                const num = Math.round(item.checkings);
+                if (num < smallest) {
+                    smallest = num;
+                }
+                if (num > largest) {
+                    largest = num;
+                }
+            }
+
+            if (accountsVisibility.savings) {
+                const num = Math.round(item.savings);
+                if (num < smallest) {
+                    smallest = num;
+                }
+                if (num > largest) {
+                    largest = num;
+                }
+            }
+
+            if (accountsVisibility.other) {
+                const num = Math.round(item.other);
+                if (num < smallest) {
+                    smallest = num;
+                }
+                if (num > largest) {
+                    largest = num;
+                }
+            }
+        });
+
+        setSmallestValue(smallest);
+        setLargestValue(largest);
+    }, [data, accountsVisibility]);
+
+    const toggleAccountVisibility = (accountName) => {
+        setAccountsVisibility((prevState) => ({
+            ...prevState,
+            [accountName]: !prevState[accountName],
+        }));
+    };
+
+    useEffect(() => {
+        setYAxisKey((prevKey) => prevKey + 1);
+    }, [smallestValue, largestValue]);
 
     return (
         <ResponsiveContainer width='100%' height={700}>
             <LineChart
                 data={data}
+                key={yAxisKey}
                 margin={{
                     top: 5,
                     right: 30,
@@ -52,10 +103,15 @@ const BankGraph = ({ data }) => {
                     }
                 />
                 <YAxis
-                    domain={[smallest, largest]}
+                    domain={[smallestValue, largestValue]}
                 />
                 <Tooltip />
-                <Legend />
+                <Legend
+                    onClick={(e) => {
+                        console.log(e.dataKey);
+                        toggleAccountVisibility(e.dataKey);
+                    }}
+                />
                 {/* Line for Checkings */}
                 <Line
                     type="monotone"
@@ -64,6 +120,7 @@ const BankGraph = ({ data }) => {
                     stroke="#F64C72"
                     activeDot={{ r: 8 }}
                     strokeWidth={3}
+                    hide={!accountsVisibility.checkings}
                 />
 
                 {/* Line for Savings */}
@@ -74,6 +131,7 @@ const BankGraph = ({ data }) => {
                     stroke="#5AA4FC"
                     activeDot={{ r: 8 }}
                     strokeWidth={3}
+                    hide={!accountsVisibility.savings}
                 />
 
                 {/* Line for Other */}
@@ -84,6 +142,7 @@ const BankGraph = ({ data }) => {
                     stroke="#36A2A3"
                     activeDot={{ r: 8 }}
                     strokeWidth={3}
+                    hide={!accountsVisibility.other}
                 />
             </LineChart>
         </ResponsiveContainer >
