@@ -72,13 +72,93 @@ router.post("/add-bank-entry", async (req, res) => {
             })
             .catch((e) => {
                 console.error(e.message);
-                console.log("here?")
                 res.status(500).json({ error: "Server error." });
             })
 
     } catch (e) {
         console.error(e.message);
-        console.log("here!")
+        res.status(500).json({ error: "Server error." });
+    }
+});
+
+
+router.delete("/delete-bank-entries", async (req, res) => {
+    try {
+
+        const { user_id, bankName, entriesToDelete } = req.body;
+
+        const userRef = Users.doc(user_id);
+        const banksRef = userRef.collection("banks");
+        const bankQuery = banksRef.where("name", "==", bankName);
+
+        for (const entry of entriesToDelete) {
+            await bankQuery.get()
+                .then(async (snapshot) => {
+                    if (!snapshot.empty) {
+                        const bankDoc = snapshot.docs[0];
+                        const entriesRef = bankDoc.ref.collection("entries");
+
+                        const entryQuery = entriesRef.where(
+                            "date", "==", entry.date,
+                            "checkings", "==", entry.checkings,
+                            "savings", "==", entry.savings,
+                            "other", "==", entry.other,
+                        );
+
+                        const querySnapshot = await entryQuery.get();
+
+                        if (!querySnapshot.empty) {
+                            querySnapshot.docs[0].ref.delete();
+                        }
+
+                    } else {
+                        res.status(404).json({ error: "Bank not found" });
+                    }
+                })
+                .catch((e) => {
+                    console.error(e.message);
+                    res.status(500).json({ error: "Server error." });
+                })
+        }
+    } catch (e) {
+        console.error(e.message);
+        res.status(500).json({ error: "Server error." })
+    }
+});
+
+router.get("/get-bank-data", async (req, res) => {
+    try {
+        const { user_id, bankName } = req.query;
+
+        const userRef = Users.doc(user_id);
+        const banksRef = userRef.collection("banks");
+        const bankQuery = banksRef.where("name", "==", bankName);
+
+        const snapshot = await bankQuery.get();
+
+        const allBankData = [];
+
+        for (let i = 0; i < snapshot.docs.length; i++) {
+            const bankDoc = snapshot.docs[i];
+            const entriesSnapshot = await bankDoc.ref.collection("entries").get();
+
+            entriesSnapshot.forEach((entryDoc) => {
+                const entryData = entryDoc.data();
+
+                const bankData = {
+                    date: entryData.date,
+                    checkings: entryData.checkings,
+                    savings: entryData.savings,
+                    other: entryData.other
+                };
+
+                allBankData.push(bankData);
+            });
+        }
+
+        res.status(200).json({ allBankData });
+    } catch (e) {
+        console.error(e.message);
         res.status(500).json({ error: "Server error." });
     }
 });

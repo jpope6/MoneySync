@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import Modal from 'react-modal';
 
@@ -12,14 +12,12 @@ import '../styles/modal.css';
 
 Modal.setAppElement("#root");
 
-const BankTable = ({ bankName }) => {
+const BankTable = ({ bankName, rowData, updateRowData }) => {
     const gridRef = useRef();
     const [modalOpen, setModalOpen] = useState(false);
     const [fadeAway, setFadeAway] = useState(false);
-    const [rowData, setRowData] = useState([
-        { date: new Date("2023-10-19T00:00:00").toLocaleDateString() },
-    ]);
-    const { addBankEntry } = useUserBanks();
+    const { addBankEntry, deleteBankEntries } = useUserBanks();
+    const [selectedRows, setSelectedRows] = useState([])
     const [date, setDate] = useState(new Date().toJSON().slice(0, 10));
     const [checkings, setCheckings] = useState(0);
     const [savings, setSavings] = useState(0);
@@ -43,11 +41,11 @@ const BankTable = ({ bankName }) => {
         };
     }, []);
 
-    const addRow = () => {
-        const copy = [...rowData];
-        const newBank = { bank: 'Bank', checkings: '100', savings: '200' }
-        copy.push(newBank);
-        setRowData(copy);
+    const addRow = ({ date, checkings, savings, other }) => {
+        updateRowData((prevRowData) => [
+            ...prevRowData,
+            { date: date, checkings: checkings, savings: savings, other: other },
+        ]);
     }
 
     const handleModalOpen = () => {
@@ -62,6 +60,32 @@ const BankTable = ({ bankName }) => {
         }, 200);
     }
 
+    const handleDeleteSelectedRows = async () => {
+        const selectedNodes = gridRef.current.api.getSelectedNodes();
+        const selectedRowData = selectedNodes.map(node => node.data);
+        gridRef.current.api.applyTransaction({ remove: selectedRowData });
+
+        let updatedRowData = [...rowData];
+
+
+        selectedRowData.forEach(row => {
+            updatedRowData = updatedRowData.filter(item =>
+                item.date !== row.date ||
+                item.checkings !== row.checkings ||
+                item.savings !== row.savings ||
+                item.other !== row.other
+            );   
+        
+        });
+
+        console.log(updatedRowData);
+
+        updateRowData(updatedRowData);
+
+
+        await deleteBankEntries(bankName, selectedRowData);
+    }
+
     const handleModalSubmit = async (e) => {
         e.preventDefault();
 
@@ -73,11 +97,17 @@ const BankTable = ({ bankName }) => {
                 savings,
                 other
             );
+            addRow({ date: date, checkings: checkings, savings: savings, other: other });
+            setDate(new Date().toJSON().slice(0, 10));
+            setCheckings(0);
+            setSavings(0);
+            setOther(0);
             setModalOpen(false);
         } catch (error) {
             console.error("Error adding a bank:", error);
         }
     }
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -97,6 +127,7 @@ const BankTable = ({ bankName }) => {
         <div className="ag-theme-alpine-dark"
             style={{ width: '100%', paddingTop: '2rem' }}>
             <button onClick={handleModalOpen}>Add Entry</button>
+            <button onClick={handleDeleteSelectedRows}>Delete Selected Rows</button>
             <AgGridReact
                 ref={gridRef}
                 rowData={rowData}

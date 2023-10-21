@@ -41,7 +41,7 @@ const data = [
     }
 ];
 
-const Graph = () => {
+const AllBanksGraph = () => {
     return (
         <ResponsiveContainer width='100%' height={700}>
             <LineChart
@@ -74,4 +74,4 @@ const Graph = () => {
     );
 };
 
-export default Graph;
+export default AllBanksGraph;

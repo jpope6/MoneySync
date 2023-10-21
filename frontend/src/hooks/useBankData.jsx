@@ -64,5 +64,46 @@ export function useUserBanks() {
         }
     }
 
-    return { addBank, fetchBankNames, addBankEntry };
+
+    const deleteBankEntries = async (bankName, entriesToDelete) => {
+        try {
+            const body = {
+                user_id: user.user.uid,
+                bankName: bankName,
+                entriesToDelete: entriesToDelete
+            }
+
+            await axios.delete(
+                `${backendUrl}/api/users/delete-bank-entries`,
+                { data: body }
+            );
+
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const fetchBankData = async (bankName) => {
+        try {
+            const response = await axios.get(
+                `${backendUrl}/api/users/get-bank-data`, {
+                params: {
+                    user_id: user.user.uid,
+                    bankName: bankName
+                }
+            });
+
+            return response.data.allBankData;
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    return {
+        addBank,
+        fetchBankNames,
+        addBankEntry,
+        fetchBankData,
+        deleteBankEntries
+    };
 };
