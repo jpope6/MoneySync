@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
     LineChart,
     Line,
@@ -10,38 +10,33 @@ import {
     ResponsiveContainer
 } from "recharts";
 
-const data = [
-    {
-        date: "10/5/23",
-        amt: 2400
-    },
-    {
-        date: "10/6/23",
-        amt: 2210
-    },
-    {
-        date: "10/7/23",
-        amt: 2290
-    },
-    {
-        date: "10/8/23",
-        amt: 2000
-    },
-    {
-        date: "10/9/23",
-        amt: 2181
-    },
-    {
-        date: "10/10/23",
-        amt: 2500
-    },
-    {
-        date: "10/11/23",
-        amt: 2100
-    }
-];
+const AllBanksGraph = ({ data }) => {
+    const [smallestValue, setSmallestValue] = useState(Number.POSITIVE_INFINITY);
+    const [largestValue, setLargestValue] = useState(Number.NEGATIVE_INFINITY);
 
-const AllBanksGraph = () => {
+    useEffect(() => {
+        // Calculate smallestValue and largestValue based on visible series
+        let smallest = Number.POSITIVE_INFINITY;
+        let largest = Number.NEGATIVE_INFINITY;
+
+        data.forEach((item) => {
+            const num = Math.round(item.total);
+
+            console.log(item.name);
+
+            if (num < smallest) {
+                smallest = num;
+            }
+
+            if (num > largest) {
+                largest = num;
+            }
+        });
+
+        setSmallestValue(smallest);
+        setLargestValue(largest);
+    }, [data]);
+
     return (
         <ResponsiveContainer width='100%' height={700}>
             <LineChart
@@ -56,15 +51,23 @@ const AllBanksGraph = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                     dataKey="date"
+                    tickFormatter={
+                        (date) => new Date(date)
+                            .toLocaleDateString('en-US', {
+                                month: '2-digit',
+                                day: '2-digit',
+                                year: '2-digit'
+                            })
+                    }
                 />
                 <YAxis
-                    domain={[1900, 2600]}
+                    domain={[smallestValue, largestValue]}
                 />
                 <Tooltip />
                 <Legend />
                 <Line
                     type="monotone"
-                    dataKey="amt"
+                    dataKey="total"
                     stroke="#F64C72"
                     activeDot={{ r: 8 }}
                     strokeWidth={3}

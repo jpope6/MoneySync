@@ -99,11 +99,27 @@ export function useUserBanks() {
         }
     }
 
+    const fetchAllBanksData = async () => {
+        try {
+            const response = await axios.get(
+                `${backendUrl}/api/users/get-all-banks-data`, {
+                params: {
+                    user_id: user.user.uid,
+                }
+            });
+
+            return response.data.allBanksData;
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     return {
         addBank,
         fetchBankNames,
         addBankEntry,
         fetchBankData,
-        deleteBankEntries
+        deleteBankEntries,
+        fetchAllBanksData
     };
 };

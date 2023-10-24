@@ -19,7 +19,6 @@ const BankGraph = ({ data }) => {
     });
     const [smallestValue, setSmallestValue] = useState(Number.POSITIVE_INFINITY);
     const [largestValue, setLargestValue] = useState(Number.NEGATIVE_INFINITY);
-    const [yAxisKey, setYAxisKey] = useState(1);
 
     // Sort the data by date
     data = data.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -28,8 +27,6 @@ const BankGraph = ({ data }) => {
         // Calculate smallestValue and largestValue based on visible series
         let smallest = Number.POSITIVE_INFINITY;
         let largest = Number.NEGATIVE_INFINITY;
-
-        console.log(accountsVisibility);
 
         data.forEach((item) => {
             if (accountsVisibility.checkings) {
@@ -74,15 +71,10 @@ const BankGraph = ({ data }) => {
         }));
     };
 
-    useEffect(() => {
-        setYAxisKey((prevKey) => prevKey + 1);
-    }, [smallestValue, largestValue]);
-
     return (
         <ResponsiveContainer width='100%' height={700}>
             <LineChart
                 data={data}
-                key={yAxisKey}
                 margin={{
                     top: 5,
                     right: 30,

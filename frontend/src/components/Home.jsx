@@ -11,7 +11,7 @@ import { useUserBanks } from "../hooks/useBankData";
 import '../styles/home.css';
 
 const Home = () => {
-    const { fetchBankNames, fetchBankData } = useUserBanks();
+    const { fetchBankNames, fetchBankData, fetchAllBanksData } = useUserBanks();
     const [bankNames, setBankNames] = useState([]);
     const [currentSelection, setCurrentSelection] = useState('All');
     const [data, setData] = useState([]);
@@ -52,35 +52,49 @@ const Home = () => {
         fetchBanks();
     }, []);
 
+
     useEffect(() => {
         async function fetchData() {
             try {
                 if (currentSelection === 'All') {
-                    return;
+                    const fetchedBankData = await fetchAllBanksData();
+
+                    console.log(fetchedBankData);
+
+                    fetchedBankData.forEach((bankData) => {
+                        setData((prevData) => [
+                            ...prevData,
+                            {
+                                date: bankData.date,
+                                name: bankData.name,
+                                total: bankData.total,
+                                difference: bankData.difference
+                            },
+                        ]);
+                    });
+                } else {
+                    const fetchedBankData = await fetchBankData(currentSelection);
+
+                    fetchedBankData.forEach((bankData) => {
+                        setData((prevData) => [
+                            ...prevData,
+                            {
+                                date: bankData.date,
+                                checkings: bankData.checkings,
+                                savings: bankData.savings,
+                                other: bankData.other
+                            },
+                        ]);
+                    });
                 }
-
-                const fetchedBankData = await fetchBankData(currentSelection);
-
-                fetchedBankData.forEach((bankData) => {
-
-                    setData((prevData) => [
-                        ...prevData,
-                        {
-                            date: bankData.date,
-                            checkings: bankData.checkings,
-                            savings: bankData.savings,
-                            other: bankData.other
-                        },
-                    ]);
-
-                })
-
             } catch (error) {
-                console.error("Error fetching bank names:", error);
+                console.error("Error fetching bank data:", error);
             }
         }
+
         fetchData();
     }, [currentSelection]);
+
 
     return (
         <div className="home">
@@ -96,7 +110,9 @@ const Home = () => {
                 />
                 {currentSelection === 'All' ?
                     <>
-                        <AllBanksGraph />
+                        <AllBanksGraph
+                            data={data}
+                        />
                         <AllBanksTable />
                     </>
                     :
