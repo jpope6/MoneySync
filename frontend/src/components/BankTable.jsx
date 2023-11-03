@@ -25,7 +25,9 @@ const BankTable = ({ bankName, rowData, updateRowData }) => {
 
     const columnDefs = [
         { headerCheckboxSelection: true, checkboxSelection: true, maxWidth: 50 },
-        { field: 'date', headerName: 'Date' },
+        {
+            field: 'date', headerName: 'Date', sort: 'desc',
+        },
         { field: 'checkings', headerName: 'Checkings' },
         { field: 'savings', headerName: 'Savings' },
         { field: 'other', headerName: 'Other' },
@@ -74,8 +76,8 @@ const BankTable = ({ bankName, rowData, updateRowData }) => {
                 item.checkings !== row.checkings ||
                 item.savings !== row.savings ||
                 item.other !== row.other
-            );   
-        
+            );
+
         });
 
         console.log(updatedRowData);

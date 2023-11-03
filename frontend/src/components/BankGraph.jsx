@@ -20,9 +20,6 @@ const BankGraph = ({ data }) => {
     const [smallestValue, setSmallestValue] = useState(Number.POSITIVE_INFINITY);
     const [largestValue, setLargestValue] = useState(Number.NEGATIVE_INFINITY);
 
-    // Sort the data by date
-    data = data.sort((a, b) => new Date(a.date) - new Date(b.date));
-
     useEffect(() => {
         // Calculate smallestValue and largestValue based on visible series
         let smallest = Number.POSITIVE_INFINITY;
@@ -60,6 +57,18 @@ const BankGraph = ({ data }) => {
             }
         });
 
+        data.sort((a, b) => {
+            // Compare the date values
+            const dateComparison = a.date - b.date;
+
+            // If the date values are the same, compare the timestamp values
+            if (dateComparison === 0) {
+                return a.timestamp - b.timestamp;
+            }
+
+            return dateComparison;
+        });
+        console.log(data);
         setSmallestValue(smallest);
         setLargestValue(largest);
     }, [data, accountsVisibility]);
@@ -85,12 +94,14 @@ const BankGraph = ({ data }) => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                     dataKey="date"
+                    type="category"
                     tickFormatter={
                         (date) => new Date(date)
                             .toLocaleDateString('en-US', {
                                 month: '2-digit',
                                 day: '2-digit',
-                                year: '2-digit'
+                                year: '2-digit',
+                                timeZone: 'UTC'
                             })
                     }
                 />
@@ -100,7 +111,6 @@ const BankGraph = ({ data }) => {
                 <Tooltip />
                 <Legend
                     onClick={(e) => {
-                        console.log(e.dataKey);
                         toggleAccountVisibility(e.dataKey);
                     }}
                 />

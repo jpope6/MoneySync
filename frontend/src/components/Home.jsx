@@ -15,7 +15,7 @@ const Home = () => {
     const [bankNames, setBankNames] = useState([]);
     const [currentSelection, setCurrentSelection] = useState('All');
     const [data, setData] = useState([]);
-    const [resetGraph, setResetGraph] = useState(false);
+    const [allData, setAllData] = useState({});
 
     const updateBankNames = (bankName) => {
         setBankNames(bankNames => [...bankNames, bankName]);
@@ -33,10 +33,6 @@ const Home = () => {
 
     const updateData = (data) => {
         setData(data);
-    }
-
-    const updateResetGraph = (resetGraph) => {
-        setResetGraph((resetGraph) => !resetGraph);
     }
 
     useEffect(() => {
@@ -58,20 +54,7 @@ const Home = () => {
             try {
                 if (currentSelection === 'All') {
                     const fetchedBankData = await fetchAllBanksData();
-
-                    console.log(fetchedBankData);
-
-                    fetchedBankData.forEach((bankData) => {
-                        setData((prevData) => [
-                            ...prevData,
-                            {
-                                date: bankData.date,
-                                name: bankData.name,
-                                total: bankData.total,
-                                difference: bankData.difference
-                            },
-                        ]);
-                    });
+                    setAllData(fetchedBankData);
                 } else {
                     const fetchedBankData = await fetchBankData(currentSelection);
 
@@ -82,7 +65,8 @@ const Home = () => {
                                 date: bankData.date,
                                 checkings: bankData.checkings,
                                 savings: bankData.savings,
-                                other: bankData.other
+                                other: bankData.other,
+                                timestamp: bankData.timestamp
                             },
                         ]);
                     });
@@ -111,9 +95,12 @@ const Home = () => {
                 {currentSelection === 'All' ?
                     <>
                         <AllBanksGraph
-                            data={data}
+                            data={allData}
+                            setAllData={setAllData}
                         />
-                        <AllBanksTable />
+                        <AllBanksTable
+                            data={allData}
+                        />
                     </>
                     :
                     <>

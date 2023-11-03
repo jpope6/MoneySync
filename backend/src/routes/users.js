@@ -15,13 +15,38 @@ router.post("/add-bank", async (req, res) => {
         const banksRef = userRef.collection("banks").doc();
 
         const newBankData = {
-            name: name
+            name: name,
+            color: 'black'
         };
 
         await banksRef.set(newBankData);
 
         res.status(201).json({ message: "Bank added successfully" });
 
+    } catch (e) {
+        console.error(e.message);
+        res.status(500).json({ error: "Server error." });
+    }
+});
+
+router.put("/update-bank-color", async (req, res) => {
+    try {
+        const { user_id, bankName, newColor } = req.body; // Assuming you send user_id, bankName, and newColor in the request body
+
+        const userRef = Users.doc(user_id);
+        const banksRef = userRef.collection("banks");
+        const bankDoc = await banksRef.where("name", "==", bankName).get();
+
+        if (bankDoc.empty) {
+            res.status(404).json({ error: "Bank not found" });
+            return;
+        }
+
+        // Update the color variable in the first matching bankDoc
+        const docToUpdate = bankDoc.docs[0];
+        await docToUpdate.ref.update({ color: newColor });
+
+        res.status(200).json({ message: "Color updated successfully" });
     } catch (e) {
         console.error(e.message);
         res.status(500).json({ error: "Server error." });
@@ -57,14 +82,26 @@ router.post("/add-bank-entry", async (req, res) => {
                 if (!snapshot.empty) {
                     const bankDoc = snapshot.docs[0];
 
+                    const entriesRef = bankDoc.ref.collection("entries");
+                    const entrySnapshot = await entriesRef.orderBy('timestamp', 'desc').limit(1).get();
+
+                    const total = parseFloat(checkingsAmt)
+                        + parseFloat(savingsAmt)
+                        + parseFloat(otherAmt);
+
                     const newEntry = {
                         date,
                         checkings: checkingsAmt,
                         savings: savingsAmt,
                         other: otherAmt,
-                        total: parseFloat(checkingsAmt)
-                            + parseFloat(savingsAmt)
-                            + parseFloat(otherAmt),
+                        total: total.toFixed(2),
+                        totalDifference: (() => {
+                            if (!entrySnapshot.empty) {
+                                return parseFloat((total - entrySnapshot.docs[0].data().total).toFixed(2));
+                            } else {
+                                return parseFloat(0);
+                            }
+                        })(),
                         timestamp: admin.firestore.FieldValue.serverTimestamp(),
                     };
 
@@ -153,13 +190,15 @@ router.get("/get-bank-data", async (req, res) => {
                     date: entryData.date,
                     checkings: entryData.checkings,
                     savings: entryData.savings,
-                    other: entryData.other
+                    other: entryData.other,
+                    timestamp: entryData.timestamp.toDate()
                 };
 
                 allBankData.push(bankData);
             });
         }
 
+        allBankData.sort((a, b) => a.timestamp - b.timestamp);
         res.status(200).json({ allBankData });
     } catch (e) {
         console.error(e.message);
@@ -176,41 +215,54 @@ router.get("/get-all-banks-data", async (req, res) => {
         const banksRef = userRef.collection("banks");
         const querySnapshot = await banksRef.get();
 
-        const allBanksData = [];
+        const allBanksData = {};
+
+        // Store all the dates in order to add null values later
+        const allDates = [];
 
         for (const bankDoc of querySnapshot.docs) {
             const entriesRef = bankDoc.ref.collection("entries");
-            const entrySnapshot = await entriesRef.orderBy('timestamp', 'desc').limit(2).get();
+            const entrySnapshot = await entriesRef.orderBy('timestamp', 'asc').get();
+            const name = bankDoc.data().name;
+            const color = bankDoc.data().color;
 
             if (!entrySnapshot.empty) {
-                const recentEntries = entrySnapshot.docs.map((doc) => doc.data());
+                const entries = entrySnapshot.docs.map((doc) => doc.data());
 
-                if (recentEntries.length >= 2) {
-                    // Calculate the total difference between the sums
-                    const difference = parseFloat(recentEntries[0].total) - parseFloat(recentEntries[1].total);
-                    const totalChange = parseFloat(difference).toFixed(2);
-
-                    const bankData = {
-                        date: recentEntries[0].date,
-                        name: bankDoc.data().name,
-                        total: recentEntries[0].total,
-                        difference: totalChange,
-                    };
-
-                    allBanksData.push(bankData);
-                } else {
-                    // only one doc has been added to the bank
-                    const bankData = {
-                        date: recentEntries[0].date,
-                        name: bankDoc.data().name,
-                        total: recentEntries[0].total,
-                        difference: 0,
-                    };
-
-                    allBanksData.push(bankData);
+                if (!allBanksData[name]) {
+                    allBanksData[name] = [];
                 }
+
+                const dateToEntryMap = {};
+
+                entries.map((entry) => {
+                    const date = entry.date;
+                    const total = parseFloat(entry.total);
+                    const timestamp = entry.timestamp.toDate();
+
+                    // Check if the date is not already in allDates
+                    if (!allDates.includes(date)) {
+                        allDates.push(date);
+                    }
+
+                    if (!dateToEntryMap[date] || timestamp > dateToEntryMap[date].timestamp) {
+                        dateToEntryMap[date] = {
+                            name: name,
+                            date: date,
+                            total: total,
+                            totalDifference: parseFloat(entry.totalDifference),
+                            timestamp: timestamp,
+                            color: color
+                        };
+                    }
+                });
+
+                allBanksData[name].push(...Object.values(dateToEntryMap));
             }
         }
+
+        addNullValues(allDates, allBanksData);
+        console.log(allBanksData);
 
         res.status(200).json({ allBanksData });
     } catch (e) {
@@ -218,6 +270,22 @@ router.get("/get-all-banks-data", async (req, res) => {
         res.status(500).json({ error: "Server error." });
     }
 });
+
+const addNullValues = (allDates, allBanksData) => {
+    for (const bank in allBanksData) {
+        const transactions = allBanksData[bank];
+        const filledData = {};
+
+        for (const date of allDates) {
+            const transaction = transactions.find((t) => t.date === date);
+            filledData[date] = transaction || { date, total: null, color: transactions[0].color };
+        }
+
+        allBanksData[bank] = Object.values(filledData);
+        allBanksData[bank].sort((a, b) => (a.date < b.date ? -1 : 1));
+    }
+};
+
 
 
 module.exports = router;
