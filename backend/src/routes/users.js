@@ -249,6 +249,9 @@ router.get("/get-all-banks-data", async (req, res) => {
                         dateToEntryMap[date] = {
                             name: name,
                             date: date,
+                            checkings: entry.checkings,
+                            savings: entry.savings,
+                            other: entry.other,
                             total: total,
                             totalDifference: parseFloat(entry.totalDifference),
                             timestamp: timestamp,
@@ -263,7 +266,6 @@ router.get("/get-all-banks-data", async (req, res) => {
 
         addNullValues(allDates, allBanksData);
         console.log(allBanksData);
-
         res.status(200).json({ allBanksData });
     } catch (e) {
         console.error(e.message);

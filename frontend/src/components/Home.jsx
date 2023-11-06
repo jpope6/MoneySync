@@ -5,10 +5,12 @@ import AllBanksGraph from "./AllBanksGraph";
 import BankGraph from "./BankGraph";
 import AllBanksTable from "./AllBanksTable";
 import BankTable from "./BankTable";
+import DropdownFilter from "./DropdownFilter";
 
 import { useUserBanks } from "../hooks/useBankData";
 
 import '../styles/home.css';
+
 
 const Home = () => {
     const { fetchBankNames, fetchBankData, fetchAllBanksData } = useUserBanks();
@@ -16,6 +18,10 @@ const Home = () => {
     const [currentSelection, setCurrentSelection] = useState('All');
     const [data, setData] = useState([]);
     const [allData, setAllData] = useState({});
+    const [filteredData, setFilteredData] = useState({});
+    const [filter, setFilter] = useState('');
+    const [selectedMonth, setSelectedMonth] = useState('');
+    const [selectedYear, setSelectedYear] = useState(parseInt(new Date().getFullYear(), 10));
 
     const updateBankNames = (bankName) => {
         setBankNames(bankNames => [...bankNames, bankName]);
@@ -79,6 +85,32 @@ const Home = () => {
         fetchData();
     }, [currentSelection]);
 
+    // Filter data
+    useEffect(() => {
+        const filtered = {};
+
+        for (const bankName in allData) {
+            const bankData = allData[bankName];
+
+            const filteredEntries = bankData.filter((entry) => {
+                const entryYear = entry.date.split('-')[0];
+                const entryMonth = entry.date.split('-')[1];
+
+                if (filter === 'year') {
+                    return entryYear == selectedYear;
+                } else if (filter === 'month') {
+                    return entryYear + '-' + entryMonth == selectedMonth;
+                }
+            });
+
+            if (filteredEntries.length > 0) {
+                filtered[bankName] = filteredEntries;
+            }
+        }
+
+        setFilteredData(filtered);
+    }, [filter, selectedMonth, selectedYear]);
+
 
     return (
         <div className="home">
@@ -92,24 +124,41 @@ const Home = () => {
                 <Header
                     title={currentSelection}
                 />
+                <DropdownFilter
+                    filter={filter}
+                    setFilter={setFilter}
+                    selectedMonth={selectedMonth}
+                    setSelectedMonth={setSelectedMonth}
+                    selectedYear={selectedYear}
+                    setSelectedYear={setSelectedYear}
+
+                />
                 {currentSelection === 'All' ?
                     <>
                         <AllBanksGraph
-                            data={allData}
+                            data={Object.keys(filteredData).length === 0 ? allData : filteredData}
                             setAllData={setAllData}
                         />
                         <AllBanksTable
-                            data={allData}
+                            data={Object.keys(filteredData).length === 0 ? allData : filteredData}
                         />
                     </>
                     :
                     <>
                         <BankGraph
-                            data={data}
+                            data={Object.keys(filteredData).length === 0
+                                ?
+                                allData[currentSelection].filter(entry => entry.total != null)
+                                :
+                                filteredData[currentSelection].filter(entry => entry.total != null)}
                         />
                         <BankTable
                             bankName={currentSelection}
-                            rowData={data}
+                            rowData={Object.keys(filteredData).length === 0
+                                ?
+                                allData[currentSelection].filter(entry => entry.total != null)
+                                :
+                                filteredData[currentSelection].filter(entry => entry.total != null)}
                             updateRowData={updateData}
                         />
                     </>

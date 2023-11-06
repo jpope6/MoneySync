@@ -21,6 +21,10 @@ const BankGraph = ({ data }) => {
     const [largestValue, setLargestValue] = useState(Number.NEGATIVE_INFINITY);
 
     useEffect(() => {
+        if (!Array.isArray(data) || data.length === 0) {
+            return; // Data is not in the expected format or is empty
+        }
+
         // Calculate smallestValue and largestValue based on visible series
         let smallest = Number.POSITIVE_INFINITY;
         let largest = Number.NEGATIVE_INFINITY;
@@ -59,7 +63,7 @@ const BankGraph = ({ data }) => {
 
         data.sort((a, b) => {
             // Compare the date values
-            const dateComparison = a.date - b.date;
+            const dateComparison = new Date(a.date) - new Date(b.date);
 
             // If the date values are the same, compare the timestamp values
             if (dateComparison === 0) {
@@ -68,7 +72,6 @@ const BankGraph = ({ data }) => {
 
             return dateComparison;
         });
-        console.log(data);
         setSmallestValue(smallest);
         setLargestValue(largest);
     }, [data, accountsVisibility]);
