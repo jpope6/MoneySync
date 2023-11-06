@@ -4,7 +4,7 @@ const cors = require("cors");
 
 var admin = require("firebase-admin");
 
-var serviceAccount = require("../../serviceAccountKey.json");
+var serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
@@ -13,7 +13,7 @@ admin.initializeApp({
 app
     .use(express.json())
     .use(cors())
-    .use("/api/users", require("../routes/users"));
+    .use("/api/users", require("./src/routes/users"));
 
 const PORT = process.env.PORT || 5000;
 
