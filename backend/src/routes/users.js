@@ -6,6 +6,15 @@ var admin = require("firebase-admin");
 const db = admin.firestore();
 const Users = db.collection("users");
 
+router.post("/test-endpoint", (req, res) => {
+    try {
+        res.status(200).json({ message: "This is a test endpoint" });
+    } catch (e) {
+        console.error(e.message);
+        res.status(500).json({ error: "Server error." });
+    }
+});
+
 
 router.post("/add-bank", async (req, res) => {
     try {
@@ -31,7 +40,7 @@ router.post("/add-bank", async (req, res) => {
 
 router.put("/update-bank-color", async (req, res) => {
     try {
-        const { user_id, bankName, newColor } = req.body; // Assuming you send user_id, bankName, and newColor in the request body
+        const { user_id, bankName, newColor } = req.body;
 
         const userRef = Users.doc(user_id);
         const banksRef = userRef.collection("banks");
