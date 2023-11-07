@@ -22,9 +22,13 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
 
+const corsOptions = {
+    origin: ['https://money-sync.onrender.com', 'http://localhost:3000']
+};
+
 app
     .use(express.json())
-    .use(cors())
+    .use(cors(corsOptions))
     .use("/api/users", require("./src/routes/users"));
 
 const PORT = process.env.PORT || 5000;
