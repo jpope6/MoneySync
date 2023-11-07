@@ -84,7 +84,6 @@ const BankTable = ({ bankName, rowData, updateRowData }) => {
 
         updateRowData(updatedRowData);
 
-
         await deleteBankEntries(bankName, selectedRowData);
     }
 

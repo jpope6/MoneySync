@@ -32,7 +32,6 @@ const Home = () => {
             return;
         }
 
-
         setCurrentSelection(newSelection);
         setData([]);
     }
@@ -148,7 +147,7 @@ const Home = () => {
                         <BankGraph
                             data={Object.keys(filteredData).length === 0
                                 ?
-                                allData[currentSelection].filter(entry => entry.total != null)
+                                data
                                 :
                                 filteredData[currentSelection].filter(entry => entry.total != null)}
                         />
@@ -156,10 +155,10 @@ const Home = () => {
                             bankName={currentSelection}
                             rowData={Object.keys(filteredData).length === 0
                                 ?
-                                allData[currentSelection].filter(entry => entry.total != null)
+                                data
                                 :
                                 filteredData[currentSelection].filter(entry => entry.total != null)}
-                            updateRowData={updateData}
+                            updateRowData={setData}
                         />
                     </>
                 }

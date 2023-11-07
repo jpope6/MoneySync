@@ -72,6 +72,8 @@ const BankGraph = ({ data }) => {
 
             return dateComparison;
         });
+
+        console.log('Data:', data);
         setSmallestValue(smallest);
         setLargestValue(largest);
     }, [data, accountsVisibility]);

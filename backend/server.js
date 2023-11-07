@@ -23,7 +23,9 @@ admin.initializeApp({
 });
 
 const corsOptions = {
-    origin: ['https://money-sync.onrender.com', 'https://cloudy-crow-sunbonnet.cyclic.app', 'http://localhost:3000']
+    origin: ['https://money-sync.onrender.com', 'https://cloudy-crow-sunbonnet.cyclic.app', 'http://localhost:3000'],
+    methods: 'POST, GET, PUT, DELETE',
+    allowedHeaders: 'Content-Type',
 };
 
 app
