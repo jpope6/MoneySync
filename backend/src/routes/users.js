@@ -100,9 +100,9 @@ router.post("/add-bank-entry", async (req, res) => {
 
                     const newEntry = {
                         date,
-                        checkings: checkingsAmt,
-                        savings: savingsAmt,
-                        other: otherAmt,
+                        checkings: parseFloat(checkingsAmt).toFixed(2),
+                        savings: parseFloat(savingsAmt).toFixed(2),
+                        other: parseFloat(otherAmt).toFixed(2),
                         total: total.toFixed(2),
                         totalDifference: (() => {
                             if (!entrySnapshot.empty) {
