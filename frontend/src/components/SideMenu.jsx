@@ -14,6 +14,7 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
     const [modalOpen, setModalOpen] = useState(false);
     const [fadeAway, setFadeAway] = useState(false);
     const [bankName, setBankName] = useState('');
+    const [isUniqueBankName, setIsUniqueBankName] = useState(true);
 
     const handleModalOpen = () => {
         setModalOpen(true);
@@ -24,6 +25,8 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
         setTimeout(() => {
             setModalOpen(false);
             setFadeAway(false);
+            setBankName('');
+            setIsUniqueBankName(true);
         }, 200);
     }
 
@@ -32,13 +35,25 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
     }
 
     const handleInputChange = (e) => {
-        setBankName(e.target.value);
+        const newBankName = e.target.value
+        setBankName(newBankName);
+
+        if (bankNames.includes(newBankName)) {
+            setIsUniqueBankName(false);
+        } else {
+            setIsUniqueBankName(true);
+        }
     }
 
     const handleModalSubmit = async (e) => {
         e.preventDefault();
 
         try {
+            if (!isUniqueBankName) {
+                return;
+            }
+
+
             await addBank(bankName);
             updateBankNames(bankName);
             setBankName('');
@@ -76,7 +91,16 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
                     },
                 }}
             >
-                <input type="text" placeholder="Add a bank" onChange={handleInputChange} autoFocus />
+                <div>
+                    <input
+                        type="text"
+                        placeholder="Add a bank"
+                        value={bankName}
+                        onChange={handleInputChange}
+                        autoFocus
+                    />
+                    {!isUniqueBankName && <p style={{ color: 'red' }}>Bank name already exists!</p>}
+                </div>
                 <button type="submit" onClick={handleModalSubmit}>Submit</button>
                 <button className="modal-button" onClick={handleModalClose}>Close Modal</button>
             </Modal>

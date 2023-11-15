@@ -11,84 +11,32 @@ import {
 } from "recharts";
 
 
-const BankGraph = ({ data }) => {
-    const [accountsVisibility, setAccountsVisibility] = useState({
-        checkings: true,
-        savings: true,
-        other: true,
+const BankGraph = ({ data, colorData }) => {
+    // Extract categories and months from the data
+    const categories = data.map((entry) => entry.category);
+    const months = Object.keys(data[0]).filter((key) => key !== 'category');
+
+    // Reformat data for LineChart
+    const chartData = months.map((month) => {
+        const entry = { month };
+        categories.forEach((category) => {
+            entry[category] = data.find((d) => d.category === category)[month];
+        });
+        return entry;
     });
-    const [smallestValue, setSmallestValue] = useState(Number.POSITIVE_INFINITY);
-    const [largestValue, setLargestValue] = useState(Number.NEGATIVE_INFINITY);
 
-    useEffect(() => {
-        if (!Array.isArray(data) || data.length === 0) {
-            return; // Data is not in the expected format or is empty
-        }
-
-        // Calculate smallestValue and largestValue based on visible series
-        let smallest = Number.POSITIVE_INFINITY;
-        let largest = Number.NEGATIVE_INFINITY;
-
-        data.forEach((item) => {
-            if (accountsVisibility.checkings) {
-                const num = Math.round(item.checkings);
-                if (num < smallest) {
-                    smallest = num;
-                }
-                if (num > largest) {
-                    largest = num;
-                }
-            }
-
-            if (accountsVisibility.savings) {
-                const num = Math.round(item.savings);
-                if (num < smallest) {
-                    smallest = num;
-                }
-                if (num > largest) {
-                    largest = num;
-                }
-            }
-
-            if (accountsVisibility.other) {
-                const num = Math.round(item.other);
-                if (num < smallest) {
-                    smallest = num;
-                }
-                if (num > largest) {
-                    largest = num;
-                }
-            }
-        });
-
-        data.sort((a, b) => {
-            // Compare the date values
-            const dateComparison = new Date(a.date) - new Date(b.date);
-
-            // If the date values are the same, compare the timestamp values
-            if (dateComparison === 0) {
-                return a.timestamp - b.timestamp;
-            }
-
-            return dateComparison;
-        });
-
-        console.log('Data:', data);
-        setSmallestValue(smallest);
-        setLargestValue(largest);
-    }, [data, accountsVisibility]);
-
-    const toggleAccountVisibility = (accountName) => {
-        setAccountsVisibility((prevState) => ({
-            ...prevState,
-            [accountName]: !prevState[accountName],
-        }));
-    };
+    // Determine the smallest and largest values for YAxis domain
+    const allValues = chartData.reduce(
+        (acc, entry) => acc.concat(Object.values(entry).slice(1)),
+        []
+    );
+    const smallestValue = Math.min(...allValues);
+    const largestValue = Math.max(...allValues);
 
     return (
         <ResponsiveContainer width='100%' height={700}>
             <LineChart
-                data={data}
+                data={chartData}
                 margin={{
                     top: 5,
                     right: 30,
@@ -98,59 +46,25 @@ const BankGraph = ({ data }) => {
             >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
-                    dataKey="date"
+                    dataKey="month"
                     type="category"
-                    tickFormatter={
-                        (date) => new Date(date)
-                            .toLocaleDateString('en-US', {
-                                month: '2-digit',
-                                day: '2-digit',
-                                year: '2-digit',
-                                timeZone: 'UTC'
-                            })
-                    }
                 />
                 <YAxis
                     domain={[smallestValue, largestValue]}
                 />
                 <Tooltip />
-                <Legend
-                    onClick={(e) => {
-                        toggleAccountVisibility(e.dataKey);
-                    }}
-                />
-                {/* Line for Checkings */}
-                <Line
-                    type="monotone"
-                    dataKey="checkings"
-                    name="Checkings"
-                    stroke="#F64C72"
-                    activeDot={{ r: 8 }}
-                    strokeWidth={3}
-                    hide={!accountsVisibility.checkings}
-                />
-
-                {/* Line for Savings */}
-                <Line
-                    type="monotone"
-                    dataKey="savings"
-                    name="Savings"
-                    stroke="#5AA4FC"
-                    activeDot={{ r: 8 }}
-                    strokeWidth={3}
-                    hide={!accountsVisibility.savings}
-                />
-
-                {/* Line for Other */}
-                <Line
-                    type="monotone"
-                    dataKey="other"
-                    name="Other"
-                    stroke="#36A2A3"
-                    activeDot={{ r: 8 }}
-                    strokeWidth={3}
-                    hide={!accountsVisibility.other}
-                />
+                <Legend />
+                {categories.map(category => (
+                    <Line
+                        key={category}
+                        type="monotone"
+                        dataKey={category}
+                        name={category}
+                        stroke={colorData[category]}
+                        activeDot={{ r: 8 }}
+                        strokeWidth={3}
+                    />
+                ))}
             </LineChart>
         </ResponsiveContainer >
     );

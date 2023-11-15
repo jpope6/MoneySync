@@ -1,4 +1,5 @@
 const express = require("express");
+const { firestore } = require("firebase-admin");
 const router = express.Router();
 
 
@@ -6,29 +7,18 @@ var admin = require("firebase-admin");
 const db = admin.firestore();
 const Users = db.collection("users");
 
-router.post("/test-endpoint", (req, res) => {
-    try {
-        res.status(200).json({ message: "This is a test endpoint" });
-    } catch (e) {
-        console.error(e.message);
-        res.status(500).json({ error: "Server error." });
-    }
-});
-
-
 router.post("/add-bank", async (req, res) => {
     try {
         const { name, user_id } = req.body;
 
         const userRef = Users.doc(user_id);
-        const banksRef = userRef.collection("banks").doc();
 
-        const newBankData = {
-            name: name,
-            color: 'black'
-        };
-
-        await banksRef.set(newBankData);
+        await userRef.update({
+            bankNames: firestore.FieldValue.arrayUnion(name),
+        })
+            .catch((error) => {
+                console.error('Error updating document: ', error);
+            });
 
         res.status(201).json({ message: "Bank added successfully" });
 
@@ -67,9 +57,13 @@ router.get("/get-bank-names", async (req, res) => {
         const { user_id } = req.query;
 
         const userRef = Users.doc(user_id);
-        const banksRef = userRef.collection("banks");
-        const snapshot = await banksRef.get();
-        const bankNames = snapshot.docs.map((doc) => doc.get("name"));
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const bankNames = userDoc.data().bankNames || [];
 
         res.status(200).json({ bankNames });
     } catch (e) {

@@ -17,11 +17,108 @@ const Home = () => {
     const [bankNames, setBankNames] = useState([]);
     const [currentSelection, setCurrentSelection] = useState('All');
     const [data, setData] = useState([]);
-    const [allData, setAllData] = useState({});
-    const [filteredData, setFilteredData] = useState({});
-    const [filter, setFilter] = useState('');
-    const [selectedMonth, setSelectedMonth] = useState('');
-    const [selectedYear, setSelectedYear] = useState(parseInt(new Date().getFullYear(), 10));
+    const [allData, setAllData] = useState({
+        'Chase': [
+            {
+                category: 'Checkings',
+                January: 600,
+                February: 600,
+                March: 700,
+                April: 750,
+                May: 800,
+                June: 850,
+                July: 900,
+                August: 950,
+                September: 1000,
+                October: 1050,
+                November: 1100,
+                December: 1150
+            },
+            {
+                category: 'Savings',
+                January: 800,
+                February: 800,
+                March: 850,
+                April: 900,
+                May: 950,
+                June: 1000,
+                July: 1050,
+                August: 1100,
+                September: 1150,
+                October: 1200,
+                November: 1250,
+                December: 1300
+            },
+            {
+                category: 'House',
+                January: 900,
+                February: 900,
+                March: 950,
+                April: 1000,
+                May: 1100,
+                June: 1200,
+                July: 1300,
+                August: 1400,
+                September: 1500,
+                October: 1600,
+                November: 1700,
+                December: 1800
+            },
+            {
+                category: 'Car',
+                January: 350,
+                February: 350,
+                March: 400,
+                April: 420,
+                May: 450,
+                June: 480,
+                July: 500,
+                August: 520,
+                September: 550,
+                October: 580,
+                November: 600,
+                December: 620
+            },
+            {
+                category: 'Boat',
+                January: 500,
+                February: 500,
+                March: 550,
+                April: 580,
+                May: 600,
+                June: 620,
+                July: 650,
+                August: 680,
+                September: 700,
+                October: 720,
+                November: 750,
+                December: 780
+            },
+        ],
+    });
+    const [colorData, setColorData] = useState({
+        Checkings: 'black',
+        Savings: 'red',
+        House: 'green',
+        Car: 'pink',
+        Boat: 'gray',
+    });
+    const [filteredData, setFilteredData] = useState([]);
+
+    const getCurrentYear = () => {
+        return new Date().getFullYear().toString();
+    };
+
+    // Set the filter to be defaulted to January-December of Current Year
+    const [selectedToMonth, setSelectedToMonth] = useState(`${getCurrentYear()}-01`);
+    const [selectedFromMonth, setSelectedFromMonth] = useState(`${getCurrentYear()}-12`);
+
+    useEffect(() => {
+        const currentYear = getCurrentYear();
+        setSelectedToMonth(`${currentYear}-01`);
+        setSelectedFromMonth(`${currentYear}-12`);
+    }, []);
+
 
     const updateBankNames = (bankName) => {
         setBankNames(bankNames => [...bankNames, bankName]);
@@ -33,83 +130,27 @@ const Home = () => {
         }
 
         setCurrentSelection(newSelection);
-        setData([]);
     }
 
-    const updateData = (data) => {
-        setData(data);
-    }
 
+    const updateData = (newData) => {
+        setData(newData);
+    };
+
+
+    // Fetch the bankNames array from the database to load them onto the side menu
+    // TODO: Should this go into the SideMenu component?
     useEffect(() => {
         async function fetchBanks() {
             try {
                 const fetchedBankNames = await fetchBankNames();
                 setBankNames(fetchedBankNames);
             } catch (error) {
-                // Handle the error, e.g., show an error message to the user
                 console.error("Error fetching bank names:", error);
             }
         }
         fetchBanks();
     }, []);
-
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                if (currentSelection === 'All') {
-                    const fetchedBankData = await fetchAllBanksData();
-                    setAllData(fetchedBankData);
-                } else {
-                    const fetchedBankData = await fetchBankData(currentSelection);
-
-                    fetchedBankData.forEach((bankData) => {
-                        setData((prevData) => [
-                            ...prevData,
-                            {
-                                date: bankData.date,
-                                checkings: bankData.checkings,
-                                savings: bankData.savings,
-                                other: bankData.other,
-                                timestamp: bankData.timestamp
-                            },
-                        ]);
-                    });
-                }
-            } catch (error) {
-                console.error("Error fetching bank data:", error);
-            }
-        }
-
-        fetchData();
-    }, [currentSelection]);
-
-    // Filter data
-    useEffect(() => {
-        const filtered = {};
-
-        for (const bankName in allData) {
-            const bankData = allData[bankName];
-
-            const filteredEntries = bankData.filter((entry) => {
-                const entryYear = entry.date.split('-')[0];
-                const entryMonth = entry.date.split('-')[1];
-
-                if (filter === 'year') {
-                    return entryYear == selectedYear;
-                } else if (filter === 'month') {
-                    return entryYear + '-' + entryMonth == selectedMonth;
-                }
-            });
-
-            if (filteredEntries.length > 0) {
-                filtered[bankName] = filteredEntries;
-            }
-        }
-
-        setFilteredData(filtered);
-    }, [filter, selectedMonth, selectedYear]);
-
 
     return (
         <div className="home">
@@ -124,13 +165,10 @@ const Home = () => {
                     title={currentSelection}
                 />
                 <DropdownFilter
-                    filter={filter}
-                    setFilter={setFilter}
-                    selectedMonth={selectedMonth}
-                    setSelectedMonth={setSelectedMonth}
-                    selectedYear={selectedYear}
-                    setSelectedYear={setSelectedYear}
-
+                    selectedToMonth={selectedToMonth}
+                    selectedFromMonth={selectedFromMonth}
+                    setSelectedToMonth={setSelectedToMonth}
+                    setSelectedFromMonth={setSelectedFromMonth}
                 />
                 {currentSelection === 'All' ?
                     <>
@@ -145,20 +183,13 @@ const Home = () => {
                     :
                     <>
                         <BankGraph
-                            data={Object.keys(filteredData).length === 0
-                                ?
-                                data
-                                :
-                                filteredData[currentSelection].filter(entry => entry.total != null)}
+                            data={allData[currentSelection]}
+                            colorData={colorData}
                         />
                         <BankTable
                             bankName={currentSelection}
-                            rowData={Object.keys(filteredData).length === 0
-                                ?
-                                data
-                                :
-                                filteredData[currentSelection].filter(entry => entry.total != null)}
-                            updateRowData={setData}
+                            rowData={allData[currentSelection]}
+                            updateRowData={updateData}
                         />
                     </>
                 }

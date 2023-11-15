@@ -19,7 +19,6 @@ export function useUserBanks() {
             return response.data.bankNames;
         } catch (e) {
             console.log(e);
-            return [];
         }
     };
 
@@ -38,11 +37,6 @@ export function useUserBanks() {
 
     const addBank = async (bankName) => {
         try {
-            if (!user) {
-                console.error("User is undefined");
-                return;
-            }
-
             const body = { name: bankName, user_id: user.user.uid }
 
             // Send a POST request to add the bank

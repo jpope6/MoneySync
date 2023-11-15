@@ -21,8 +21,6 @@ const AllBanksGraph = ({ data, setAllData }) => {
     const { changeBankStrokeColor } = useUserBanks();
 
     useEffect(() => {
-
-        console.log(data);
         if (!Array.isArray(data) || data.length === 0) {
             return; // Data is not in the expected format or is empty
         }
