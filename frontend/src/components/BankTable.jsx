@@ -12,6 +12,22 @@ import '../styles/modal.css';
 
 Modal.setAppElement("#root");
 
+const defaultRow = {
+    category: null,
+    January: null,
+    February: null,
+    March: null,
+    April: null,
+    May: null,
+    June: null,
+    July: null,
+    August: null,
+    September: null,
+    October: null,
+    November: null,
+    December: null,
+};
+
 const BankTable = ({ bankName, rowData, updateRowData }) => {
     const gridRef = useRef();
     const [data, setData] = useState([]);
@@ -20,6 +36,7 @@ const BankTable = ({ bankName, rowData, updateRowData }) => {
     const { addBankEntry, deleteBankEntries } = useUserBanks();
     const [category, setCategory] = useState('');
     const [columnDefs, setColumnDefs] = useState([
+        { headerCheckboxSelection: true, checkboxSelection: true, maxWidth: 50 },
         { field: 'category', headerName: 'Category' },
         { field: 'January', headerName: 'January' },
         { field: 'February', headerName: 'February' },
@@ -35,19 +52,6 @@ const BankTable = ({ bankName, rowData, updateRowData }) => {
         { field: 'December', headerName: 'December' }
     ]);
 
-    console.log(rowData);
-
-    // useEffect(() => {
-    //     const categories = Object.keys(rowData[0]).filter(key => key !== 'month');
-    //     setData(categories.map(category => {
-    //         const categoryData = { category };
-    //         rowData.forEach(entry => {
-    //             categoryData[entry.month] = entry[category];
-    //         });
-    //         return categoryData;
-    //     }));
-    // }, []);
-
     const defaultColDef = useMemo(() => {
         return {
             flex: 1,
@@ -57,22 +61,42 @@ const BankTable = ({ bankName, rowData, updateRowData }) => {
         };
     }, []);
 
+
     const handleCellValueChange = (params) => {
+        console.log(params);
         const { colDef, newValue } = params;
-        const updatedRowData = data.map((row) => {
-            if (row.month === data.month) {
+        const updatedRowData = rowData.map((row) => {
+            if (row.month === rowData.month && row.category === rowData.category) {
                 return { ...row, [colDef.field]: newValue };
             }
             return row;
         });
+
+        console.log(updatedRowData);
         updateRowData(updatedRowData);
     }
 
-    const addRow = ({ date, checkings, savings, other }) => {
-        updateRowData((prevRowData) => [
-            ...prevRowData,
-            { date: date, checkings: checkings, savings: savings, other: other },
-        ]);
+    const addRow = ({ categoryName }) => {
+        const updatedData = [
+            ...rowData,
+            {
+                category: categoryName,
+                January: null,
+                February: null,
+                March: null,
+                April: null,
+                May: null,
+                June: null,
+                July: null,
+                August: null,
+                September: null,
+                October: null,
+                November: null,
+                December: null,
+            },
+        ];
+
+        updateRowData(updatedData);
     }
 
     const handleModalOpen = () => {
@@ -116,17 +140,7 @@ const BankTable = ({ bankName, rowData, updateRowData }) => {
         e.preventDefault();
 
         try {
-            // await addBankEntry(
-            //     bankName,
-            //     date,
-            //     checkings,
-            //     savings,
-            //     other
-            // );
-            // addRow({ date: date, checkings: checkings, savings: savings, other: other });
-            // setCheckings(0);
-            // setSavings(0);
-            // setOther(0);
+            await addRow({ categoryName: category });
             setModalOpen(false);
         } catch (error) {
             console.error("Error adding a bank:", error);

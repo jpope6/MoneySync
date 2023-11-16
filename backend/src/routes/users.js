@@ -2,10 +2,10 @@ const express = require("express");
 const { firestore } = require("firebase-admin");
 const router = express.Router();
 
-
 var admin = require("firebase-admin");
 const db = admin.firestore();
 const Users = db.collection("users");
+
 
 router.post("/add-bank", async (req, res) => {
     try {
@@ -13,6 +13,7 @@ router.post("/add-bank", async (req, res) => {
 
         const userRef = Users.doc(user_id);
 
+        // Add the bank name to the bank names array
         await userRef.update({
             bankNames: firestore.FieldValue.arrayUnion(name),
         })
@@ -20,32 +21,19 @@ router.post("/add-bank", async (req, res) => {
                 console.error('Error updating document: ', error);
             });
 
+        const yearsRef = userRef.collection("years").doc(new Date().getFullYear().toString());
+
+        // Add the new bank to the current years document
+        await yearsRef.set({
+            [name]: []
+        }, { merge: true })
+            .catch((error) => {
+                console.error('Error updating document: ', error);
+            });
+
+
         res.status(201).json({ message: "Bank added successfully" });
 
-    } catch (e) {
-        console.error(e.message);
-        res.status(500).json({ error: "Server error." });
-    }
-});
-
-router.put("/update-bank-color", async (req, res) => {
-    try {
-        const { user_id, bankName, newColor } = req.body;
-
-        const userRef = Users.doc(user_id);
-        const banksRef = userRef.collection("banks");
-        const bankDoc = await banksRef.where("name", "==", bankName).get();
-
-        if (bankDoc.empty) {
-            res.status(404).json({ error: "Bank not found" });
-            return;
-        }
-
-        // Update the color variable in the first matching bankDoc
-        const docToUpdate = bankDoc.docs[0];
-        await docToUpdate.ref.update({ color: newColor });
-
-        res.status(200).json({ message: "Color updated successfully" });
     } catch (e) {
         console.error(e.message);
         res.status(500).json({ error: "Server error." });
@@ -72,52 +60,10 @@ router.get("/get-bank-names", async (req, res) => {
     }
 });
 
-router.post("/add-bank-entry", async (req, res) => {
+
+router.put("/add-bank-row", async (req, res) => {
     try {
-        const { user_id, bankName, date, checkingsAmt, savingsAmt, otherAmt } = req.body;
-
-        const userRef = Users.doc(user_id);
-        const banksRef = userRef.collection("banks");
-        const bankQuery = banksRef.where("name", "==", bankName);
-
-        bankQuery.get()
-            .then(async (snapshot) => {
-                if (!snapshot.empty) {
-                    const bankDoc = snapshot.docs[0];
-
-                    const entriesRef = bankDoc.ref.collection("entries");
-                    const entrySnapshot = await entriesRef.orderBy('timestamp', 'desc').limit(1).get();
-
-                    const total = parseFloat(checkingsAmt)
-                        + parseFloat(savingsAmt)
-                        + parseFloat(otherAmt);
-
-                    const newEntry = {
-                        date,
-                        checkings: parseFloat(checkingsAmt).toFixed(2),
-                        savings: parseFloat(savingsAmt).toFixed(2),
-                        other: parseFloat(otherAmt).toFixed(2),
-                        total: total.toFixed(2),
-                        totalDifference: (() => {
-                            if (!entrySnapshot.empty) {
-                                return parseFloat((total - entrySnapshot.docs[0].data().total).toFixed(2));
-                            } else {
-                                return parseFloat(0);
-                            }
-                        })(),
-                        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-                    };
-
-                    await bankDoc.ref.collection("entries").add(newEntry);
-                    res.status(201).json({ message: "Entry added successfully" });
-                } else {
-                    res.status(404).json({ error: "Bank not found" });
-                }
-            })
-            .catch((e) => {
-                console.error(e.message);
-                res.status(500).json({ error: "Server error." });
-            })
+        const { user_id, categoryName } = req.body;
 
     } catch (e) {
         console.error(e.message);
@@ -172,36 +118,30 @@ router.delete("/delete-bank-entries", async (req, res) => {
 
 router.get("/get-bank-data", async (req, res) => {
     try {
-        const { user_id, bankName } = req.query;
+        const { user_id } = req.query;
 
         const userRef = Users.doc(user_id);
-        const banksRef = userRef.collection("banks");
-        const bankQuery = banksRef.where("name", "==", bankName);
+        const yearsRef = userRef.collection("years");
+        const querySnapshot = await yearsRef.get();
 
-        const snapshot = await bankQuery.get();
+        const allBankData = {};
 
-        const allBankData = [];
+        for (const yearDoc of querySnapshot.docs) {
+            const yearName = yearDoc.id;
+            const yearData = yearDoc.data();
 
-        for (let i = 0; i < snapshot.docs.length; i++) {
-            const bankDoc = snapshot.docs[i];
-            const entriesSnapshot = await bankDoc.ref.collection("entries").get();
+            // Initialize an object to store bank data for this year
+            allBankData[yearName] = {};
 
-            entriesSnapshot.forEach((entryDoc) => {
-                const entryData = entryDoc.data();
-
-                const bankData = {
-                    date: entryData.date,
-                    checkings: entryData.checkings,
-                    savings: entryData.savings,
-                    other: entryData.other,
-                    timestamp: entryData.timestamp.toDate()
-                };
-
-                allBankData.push(bankData);
-            });
+            // Iterate over the banks in the yearData
+            for (const [bankName, bankData] of Object.entries(yearData)) {
+                // Add the bank data to the corresponding year and bank
+                allBankData[yearName][bankName] = bankData;
+            }
         }
 
-        allBankData.sort((a, b) => a.timestamp - b.timestamp);
+        console.log(allBankData);
+
         res.status(200).json({ allBankData });
     } catch (e) {
         console.error(e.message);

@@ -6,6 +6,7 @@ import BankGraph from "./BankGraph";
 import AllBanksTable from "./AllBanksTable";
 import BankTable from "./BankTable";
 import DropdownFilter from "./DropdownFilter";
+import YearSelector from "./YearSelector";
 
 import { useUserBanks } from "../hooks/useBankData";
 
@@ -17,85 +18,7 @@ const Home = () => {
     const [bankNames, setBankNames] = useState([]);
     const [currentSelection, setCurrentSelection] = useState('All');
     const [data, setData] = useState([]);
-    const [allData, setAllData] = useState({
-        'Chase': [
-            {
-                category: 'Checkings',
-                January: 600,
-                February: 600,
-                March: 700,
-                April: 750,
-                May: 800,
-                June: 850,
-                July: 900,
-                August: 950,
-                September: 1000,
-                October: 1050,
-                November: 1100,
-                December: 1150
-            },
-            {
-                category: 'Savings',
-                January: 800,
-                February: 800,
-                March: 850,
-                April: 900,
-                May: 950,
-                June: 1000,
-                July: 1050,
-                August: 1100,
-                September: 1150,
-                October: 1200,
-                November: 1250,
-                December: 1300
-            },
-            {
-                category: 'House',
-                January: 900,
-                February: 900,
-                March: 950,
-                April: 1000,
-                May: 1100,
-                June: 1200,
-                July: 1300,
-                August: 1400,
-                September: 1500,
-                October: 1600,
-                November: 1700,
-                December: 1800
-            },
-            {
-                category: 'Car',
-                January: 350,
-                February: 350,
-                March: 400,
-                April: 420,
-                May: 450,
-                June: 480,
-                July: 500,
-                August: 520,
-                September: 550,
-                October: 580,
-                November: 600,
-                December: 620
-            },
-            {
-                category: 'Boat',
-                January: 500,
-                February: 500,
-                March: 550,
-                April: 580,
-                May: 600,
-                June: 620,
-                July: 650,
-                August: 680,
-                September: 700,
-                October: 720,
-                November: 750,
-                December: 780
-            },
-        ],
-    });
+    const [allData, setAllData] = useState({});
     const [colorData, setColorData] = useState({
         Checkings: 'black',
         Savings: 'red',
@@ -112,6 +35,7 @@ const Home = () => {
     // Set the filter to be defaulted to January-December of Current Year
     const [selectedToMonth, setSelectedToMonth] = useState(`${getCurrentYear()}-01`);
     const [selectedFromMonth, setSelectedFromMonth] = useState(`${getCurrentYear()}-12`);
+    const [selectedYear, setSelectedYear] = useState([getCurrentYear()]);
 
     useEffect(() => {
         const currentYear = getCurrentYear();
@@ -134,8 +58,26 @@ const Home = () => {
 
 
     const updateData = (newData) => {
-        setData(newData);
+        setAllData((prevAllData) => ({
+            ...prevAllData,
+            [currentSelection]: newData,
+        }));
     };
+
+    // Fetch bank data
+    useEffect(() => {
+        async function fetchAllData() {
+            try {
+                const fetchedBankData = await fetchBankData();
+                setAllData(fetchedBankData);
+                console.log(allData);
+            } catch (error) {
+                console.error("Error fetching bank data:", error);
+            }
+        }
+        fetchAllData();
+        console.log(allData);
+    }, []);
 
 
     // Fetch the bankNames array from the database to load them onto the side menu
@@ -172,6 +114,7 @@ const Home = () => {
                 />
                 {currentSelection === 'All' ?
                     <>
+                        {/*
                         <AllBanksGraph
                             data={Object.keys(filteredData).length === 0 ? allData : filteredData}
                             setAllData={setAllData}
@@ -179,16 +122,23 @@ const Home = () => {
                         <AllBanksTable
                             data={Object.keys(filteredData).length === 0 ? allData : filteredData}
                         />
+                        */}
                     </>
                     :
                     <>
                         <BankGraph
-                            data={allData[currentSelection]}
+                            data={allData[selectedYear][currentSelection]}
                             colorData={colorData}
+                        />
+
+
+                        <YearSelector
+                            selectedYear={selectedYear}
+                            setSelectedYear={setSelectedYear}
                         />
                         <BankTable
                             bankName={currentSelection}
-                            rowData={allData[currentSelection]}
+                            rowData={allData[selectedYear][currentSelection]}
                             updateRowData={updateData}
                         />
                     </>

@@ -22,19 +22,6 @@ export function useUserBanks() {
         }
     };
 
-    const changeBankStrokeColor = async (bankName, newColor) => {
-        try {
-            const response = await axios.put(`${backendUrl}/api/users/update-bank-color`, {
-                user_id: user.user.uid,
-                bankName: bankName,
-                newColor: newColor,
-            });
-            console.log(response.data); // Assuming the server responds with a success message
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
     const addBank = async (bankName) => {
         try {
             const body = { name: bankName, user_id: user.user.uid }
@@ -90,13 +77,12 @@ export function useUserBanks() {
         }
     }
 
-    const fetchBankData = async (bankName) => {
+    const fetchBankData = async () => {
         try {
             const response = await axios.get(
                 `${backendUrl}/api/users/get-bank-data`, {
                 params: {
                     user_id: user.user.uid,
-                    bankName: bankName
                 }
             });
 
@@ -124,7 +110,6 @@ export function useUserBanks() {
     return {
         addBank,
         fetchBankNames,
-        changeBankStrokeColor,
         addBankEntry,
         fetchBankData,
         deleteBankEntries,
