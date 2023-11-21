@@ -61,10 +61,23 @@ router.get("/get-bank-names", async (req, res) => {
 });
 
 
-router.put("/add-bank-row", async (req, res) => {
+router.put("/add-bank-entry", async (req, res) => {
     try {
-        const { user_id, categoryName } = req.body;
+        const { user_id, year, bankName, data } = req.body;
 
+        const userRef = Users.doc(user_id);
+        const yearsRef = userRef.collection("years");
+        const yearDocRef = yearsRef.doc(year.toString());
+        const yearDoc = await yearDocRef.get();
+        const yearData = yearDoc.data();
+
+        // Update the specific bankName data
+        yearData[bankName] = data;
+
+        // Set the updated data back to Firestore
+        await yearDocRef.set(yearData);
+
+        res.status(200).json({ message: "Year document updated successfully.", data: yearData });
     } catch (e) {
         console.error(e.message);
         res.status(500).json({ error: "Server error." });

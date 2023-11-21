@@ -28,7 +28,7 @@ const defaultRow = {
     December: null,
 };
 
-const BankTable = ({ bankName, rowData, updateRowData }) => {
+const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
     const gridRef = useRef();
     const [data, setData] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
@@ -62,9 +62,9 @@ const BankTable = ({ bankName, rowData, updateRowData }) => {
     }, []);
 
 
-    const handleCellValueChange = (params) => {
-        console.log(params);
+    const handleCellValueChange = async (params) => {
         const { colDef, newValue } = params;
+        console.log('params: ', params);
         const updatedRowData = rowData.map((row) => {
             if (row.month === rowData.month && row.category === rowData.category) {
                 return { ...row, [colDef.field]: newValue };
@@ -74,6 +74,7 @@ const BankTable = ({ bankName, rowData, updateRowData }) => {
 
         console.log(updatedRowData);
         updateRowData(updatedRowData);
+        await addBankEntry(selectedYear, bankName, updatedRowData);
     }
 
     const addRow = ({ categoryName }) => {

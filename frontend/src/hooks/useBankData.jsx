@@ -37,18 +37,16 @@ export function useUserBanks() {
 
     };
 
-    const addBankEntry = async (bankName, date, checkingsAmt, savingsAmt, otherAmt) => {
+    const addBankEntry = async (year, bankName, data) => {
         try {
             const body = {
                 user_id: user.user.uid,
+                year: year,
                 bankName: bankName,
-                date: date,
-                checkingsAmt: checkingsAmt,
-                savingsAmt: savingsAmt,
-                otherAmt: otherAmt,
+                data: data,
             }
 
-            await axios.post(
+            await axios.put(
                 `${backendUrl}/api/users/add-bank-entry`,
                 body
             );

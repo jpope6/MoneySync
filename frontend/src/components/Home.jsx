@@ -140,6 +140,7 @@ const Home = () => {
                             bankName={currentSelection}
                             rowData={allData[selectedYear][currentSelection]}
                             updateRowData={updateData}
+                            selectedYear={selectedYear}
                         />
                     </>
                 }
