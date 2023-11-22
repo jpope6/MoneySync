@@ -13,7 +13,7 @@ import Colorful from '@uiw/react-color-colorful';
 
 import { useUserBanks } from "../hooks/useBankData";
 
-const BankGraph = ({ data, colorData, updateColorSettings }) => {
+const BankGraph = ({ data, colorData, updateColorSettings, selectedDateRange }) => {
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [color, setColor] = useState('black');
     const [categoryClicked, setCategoryClicked] = useState('');
@@ -27,13 +27,14 @@ const BankGraph = ({ data, colorData, updateColorSettings }) => {
             : []
     ) || [];
 
+    const monthOrder = [
+        "January", "February", "March", "April",
+        "May", "June", "July", "August",
+        "September", "October", "November", "December"
+    ];
+
     // Sort the months
     months = months.sort((a, b) => {
-        const monthOrder = [
-            "January", "February", "March", "April",
-            "May", "June", "July", "August",
-            "September", "October", "November", "December"
-        ];
         return monthOrder.indexOf(a) - monthOrder.indexOf(b);
     });
 

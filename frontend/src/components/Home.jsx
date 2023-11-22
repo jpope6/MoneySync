@@ -5,7 +5,7 @@ import AllBanksGraph from "./AllBanksGraph";
 import BankGraph from "./BankGraph";
 import AllBanksTable from "./AllBanksTable";
 import BankTable from "./BankTable";
-import DropdownFilter from "./DropdownFilter";
+import Filter from "./Filter";
 import YearSelector from "./YearSelector";
 
 import { useUserBanks } from "../hooks/useBankData";
@@ -113,12 +113,14 @@ const Home = () => {
                 <Header
                     title={currentSelection}
                 />
-                <DropdownFilter
+                {/* 
+                <Filter
                     selectedToMonth={selectedToMonth}
                     selectedFromMonth={selectedFromMonth}
                     setSelectedToMonth={setSelectedToMonth}
                     setSelectedFromMonth={setSelectedFromMonth}
                 />
+                */}
                 {currentSelection === 'All' ?
                     <>
                         {/*
@@ -137,12 +139,15 @@ const Home = () => {
                             data={(allData[selectedYear]?.[currentSelection] || []) || []}
                             colorData={colorData}
                             updateColorSettings={updateColorSettings}
+                            selectedDateRange={{ from: selectedFromMonth, to: selectedToMonth }}
                         />
 
 
                         <YearSelector
                             selectedYear={selectedYear}
                             setSelectedYear={setSelectedYear}
+                            setSelectedToMonth={setSelectedToMonth}
+                            setSelectedFromMonth={setSelectedFromMonth}
                         />
                         <BankTable
                             bankName={currentSelection}

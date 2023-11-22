@@ -9,3 +9,7 @@
 .header-title {
 	margin: 0;
 }
+
+.header-title {
+	color: var(--text-color-secondary)
+}
