@@ -29,12 +29,11 @@ const defaultRow = {
 };
 
 const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
-    console.log(rowData);
     const gridRef = useRef();
     const [data, setData] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [fadeAway, setFadeAway] = useState(false);
-    const { addBankEntry, deleteBankEntries } = useUserBanks();
+    const { addBankEntry, deleteEntries } = useUserBanks();
     const [category, setCategory] = useState('');
     const [columnDefs, setColumnDefs] = useState([
         { headerCheckboxSelection: true, checkboxSelection: true, maxWidth: 50 },
@@ -77,7 +76,7 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
         await addBankEntry(selectedYear, bankName, updatedRowData);
     }
 
-    const addRow = ({ categoryName }) => {
+    const addRow = async ({ categoryName }) => {
         const updatedData = [
             ...rowData,
             {
@@ -97,9 +96,8 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
             },
         ];
 
-        console.log(updatedData);
-
         updateRowData(updatedData);
+        await addBankEntry(selectedYear, bankName, updatedData);
     }
 
     const handleModalOpen = () => {
@@ -111,6 +109,7 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
         setTimeout(() => {
             setModalOpen(false);
             setFadeAway(false);
+            setCategory('');
         }, 200);
     }
 
@@ -124,10 +123,7 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
 
         selectedRowData.forEach(row => {
             updatedRowData = updatedRowData.filter(item =>
-                item.date !== row.date ||
-                item.checkings !== row.checkings ||
-                item.savings !== row.savings ||
-                item.other !== row.other
+                item.category !== row.category
             );
 
         });
@@ -136,7 +132,8 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
 
         updateRowData(updatedRowData);
 
-        await deleteBankEntries(bankName, selectedRowData);
+        // Update the row data with the filtered row data
+        await deleteEntries(selectedYear, bankName, selectedRowData);
     }
 
     const handleModalSubmit = (e) => {
@@ -145,6 +142,7 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
         try {
             addRow({ categoryName: category });
             setModalOpen(false);
+            setCategory('');
         } catch (error) {
             console.error("Error adding a bank:", error);
         }
@@ -186,7 +184,15 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
                     </button>
                 </div>
 
-                <input type="text" name='category' id="category-input" value={category} onChange={handleInputChange} />
+                <input
+                    type="text"
+                    name='category'
+                    id="category-input"
+                    value={category}
+                    onChange={handleInputChange}
+                    autoComplete='off'
+                    autoFocus
+                />
 
                 <button className="modal-button" onClick={handleModalSubmit}>Add Category</button>
             </Modal>

@@ -3,6 +3,7 @@ const { firestore } = require("firebase-admin");
 const router = express.Router();
 
 var admin = require("firebase-admin");
+const { update } = require("firebase/database");
 const db = admin.firestore();
 const Users = db.collection("users");
 
@@ -128,44 +129,40 @@ router.put("/add-bank-entry", async (req, res) => {
 });
 
 
-router.delete("/delete-bank-entries", async (req, res) => {
+router.delete("/delete-entries", async (req, res) => {
     try {
 
-        const { user_id, bankName, entriesToDelete } = req.body;
+        const { user_id, year, bankName, entriesToDelete } = req.body;
 
         const userRef = Users.doc(user_id);
-        const banksRef = userRef.collection("banks");
-        const bankQuery = banksRef.where("name", "==", bankName);
+        const yearsRef = userRef.collection("years");
+        const yearDocRef = yearsRef.doc(year.toString());
+        const yearDoc = await yearDocRef.get();
 
-        for (const entry of entriesToDelete) {
-            await bankQuery.get()
-                .then(async (snapshot) => {
-                    if (!snapshot.empty) {
-                        const bankDoc = snapshot.docs[0];
-                        const entriesRef = bankDoc.ref.collection("entries");
-
-                        const entryQuery = entriesRef.where(
-                            "date", "==", entry.date,
-                            "checkings", "==", entry.checkings,
-                            "savings", "==", entry.savings,
-                            "other", "==", entry.other,
-                        );
-
-                        const querySnapshot = await entryQuery.get();
-
-                        if (!querySnapshot.empty) {
-                            querySnapshot.docs[0].ref.delete();
-                        }
-
-                    } else {
-                        res.status(404).json({ error: "Bank not found" });
-                    }
-                })
-                .catch((e) => {
-                    console.error(e.message);
-                    res.status(500).json({ error: "Server error." });
-                })
+        if (!yearDoc.exists) {
+            return res.status(404).json({ error: "Year document not found." });
         }
+
+        const yearData = yearDoc.data();
+
+        if (!yearData[bankName]) {
+            return res.status(404).json({ error: `Data for bank ${bankName} not found.` });
+        }
+
+        let updatedData = yearData[bankName];
+
+        for (const entryToDelete of entriesToDelete) {
+            console.log(entryToDelete)
+            updatedData = yearData[bankName].filter(entry => entry.category !== entryToDelete.category);
+        }
+
+        // Update the specific bankName data
+        yearData[bankName] = updatedData;
+
+        // Set the updated data back to Firestore
+        await yearDocRef.set(yearData);
+
+        res.status(200).json({ message: "Entries deleted successfully." });
     } catch (e) {
         console.error(e.message);
         res.status(500).json({ error: "Server error." })

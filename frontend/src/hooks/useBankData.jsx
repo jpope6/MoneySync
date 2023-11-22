@@ -89,16 +89,17 @@ export function useUserBanks() {
     };
 
 
-    const deleteBankEntries = async (bankName, entriesToDelete) => {
+    const deleteEntries = async (year, bankName, entriesToDelete) => {
         try {
             const body = {
                 user_id: user.user.uid,
+                year: year,
                 bankName: bankName,
                 entriesToDelete: entriesToDelete
             }
 
             await axios.delete(
-                `${backendUrl}/api/users/delete-bank-entries`,
+                `${backendUrl}/api/users/delete-entries`,
                 { data: body }
             );
 
@@ -140,11 +141,11 @@ export function useUserBanks() {
     return {
         addBank,
         fetchBankNames,
-        fetchColorSettings,
         changeCategoryColor,
+        fetchColorSettings,
         addBankEntry,
         fetchBankData,
-        deleteBankEntries,
+        deleteEntries,
         fetchAllBanksData
     };
 };
