@@ -9,10 +9,16 @@ import {
     Legend,
     ResponsiveContainer
 } from "recharts";
+import Colorful from '@uiw/react-color-colorful';
 
+import { useUserBanks } from "../hooks/useBankData";
 
-const BankGraph = ({ data, colorData }) => {
-    console.log(data);
+const BankGraph = ({ data, colorData, updateColorSettings }) => {
+    const [showColorPicker, setShowColorPicker] = useState(false);
+    const [color, setColor] = useState('black');
+    const [categoryClicked, setCategoryClicked] = useState('');
+    const { changeCategoryColor } = useUserBanks();
+
     // Extract categories and months from the data
     const categories = (Array.isArray(data) && data.map((entry) => entry.category)) || [];
     let months = (
@@ -50,41 +56,77 @@ const BankGraph = ({ data, colorData }) => {
     const smallestValue = Math.min(...allValues);
     const largestValue = Math.max(...allValues);
 
+    const handleLegendClick = (categoryName) => {
+        setCategoryClicked(categoryName);
+        setShowColorPicker((showColorPicker) => !showColorPicker);
+    }
+
+    const handleColorChange = (e) => {
+        setColor(e.hex);
+    };
+
+    const handleColorSubmit = async () => {
+        await changeCategoryColor(categoryClicked, color);
+        updateColorSettings(categoryClicked, color);
+        setShowColorPicker(false);
+        setCategoryClicked('');
+    };
+
     return (
-        <ResponsiveContainer width='100%' height={700}>
-            <LineChart
-                data={chartData}
-                margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5
-                }}
-            >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                    dataKey="month"
-                    type="category"
-                />
-                <YAxis
-                    domain={[smallestValue, largestValue]}
-                />
-                <Tooltip />
-                <Legend />
-                {categories.map(category => (
-                    <Line
-                        key={category}
-                        type="monotone"
-                        dataKey={category}
-                        name={category}
-                        stroke={colorData[category]}
-                        activeDot={{ r: 8 }}
-                        strokeWidth={3}
-                        connectNulls
+        <>
+            <ResponsiveContainer width='100%' height={700}>
+                <LineChart
+                    data={chartData}
+                    margin={{
+                        top: 5,
+                        right: 30,
+                        left: 20,
+                        bottom: 5
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                        dataKey="month"
+                        type="category"
                     />
-                ))}
-            </LineChart>
-        </ResponsiveContainer >
+                    <YAxis
+                        domain={[smallestValue, largestValue]}
+                    />
+                    <Tooltip />
+                    <Legend
+                        onClick={(e) => {
+                            handleLegendClick(e.payload.name);
+                        }}
+                    />
+                    {categories.map(category => (
+                        <Line
+                            key={category}
+                            type="monotone"
+                            dataKey={category}
+                            name={category}
+                            stroke={colorData[category] || 'purple'}
+                            activeDot={{ r: 8 }}
+                            strokeWidth={3}
+                            connectNulls
+                        />
+                    ))}
+                </LineChart>
+            </ResponsiveContainer >
+            {
+
+                showColorPicker && (
+                    <div className='color-picker'>
+                        <Colorful
+                            color={color}
+                            disableAlpha={true}
+                            onChange={handleColorChange}
+                        />
+                        <button onClick={handleColorSubmit}>Change</button>
+                    </div>
+                )
+            }
+
+        </>
     );
 };
 

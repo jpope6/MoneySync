@@ -14,18 +14,12 @@ import '../styles/home.css';
 
 
 const Home = () => {
-    const { fetchBankNames, fetchBankData, fetchAllBanksData } = useUserBanks();
+    const { fetchBankNames, fetchBankData, fetchAllBanksData, fetchColorSettings } = useUserBanks();
     const [bankNames, setBankNames] = useState([]);
     const [currentSelection, setCurrentSelection] = useState('All');
     const [data, setData] = useState([]);
     const [allData, setAllData] = useState({});
-    const [colorData, setColorData] = useState({
-        Checkings: 'black',
-        Savings: 'red',
-        House: 'green',
-        Car: 'pink',
-        Boat: 'gray',
-    });
+    const [colorData, setColorData] = useState({});
     const [filteredData, setFilteredData] = useState([]);
 
     const getCurrentYear = () => {
@@ -56,13 +50,23 @@ const Home = () => {
         setCurrentSelection(newSelection);
     }
 
-
     const updateData = (newData) => {
         setAllData((prevAllData) => ({
             ...prevAllData,
-            [currentSelection]: newData,
+            [selectedYear]: {
+                ...prevAllData[selectedYear],
+                [currentSelection]: newData,
+            },
         }));
     };
+
+    const updateColorSettings = (categoryName, newColor) => {
+        setColorData((prevColorSettings) => ({
+            ...prevColorSettings,
+            [categoryName]: newColor,
+        }));
+    };
+
 
     // Fetch bank data
     useEffect(() => {
@@ -71,6 +75,9 @@ const Home = () => {
                 const fetchedBankData = await fetchBankData();
                 setAllData(fetchedBankData);
                 console.log(allData);
+
+                const fetchedColorSettings = await fetchColorSettings();
+                setColorData(fetchedColorSettings);
             } catch (error) {
                 console.error("Error fetching bank data:", error);
             }
@@ -127,8 +134,9 @@ const Home = () => {
                     :
                     <>
                         <BankGraph
-                            data={allData[selectedYear][currentSelection]}
+                            data={(allData[selectedYear]?.[currentSelection] || []) || []}
                             colorData={colorData}
+                            updateColorSettings={updateColorSettings}
                         />
 
 
@@ -138,7 +146,7 @@ const Home = () => {
                         />
                         <BankTable
                             bankName={currentSelection}
-                            rowData={allData[selectedYear][currentSelection]}
+                            rowData={(allData[selectedYear]?.[currentSelection] || []) || []}
                             updateRowData={updateData}
                             selectedYear={selectedYear}
                         />

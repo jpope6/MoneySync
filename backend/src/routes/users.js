@@ -60,6 +60,49 @@ router.get("/get-bank-names", async (req, res) => {
     }
 });
 
+router.post("/change-category-color", async (req, res) => {
+    try {
+        const { user_id, categoryName, newColor } = req.body;
+
+        const userRef = Users.doc(user_id);
+
+        // Get the current colorSettings array
+        const userDoc = await userRef.get();
+        const colorSettings = userDoc.data().colorSettings || {};
+
+        // Update the color of the specified category
+        colorSettings[categoryName] = newColor;
+
+        // Update the colorSettings field in the user document
+        await userRef.update({ colorSettings });
+
+        res.status(200).json({ message: "Category color updated successfully." });
+    } catch (e) {
+        console.error(e.message);
+        res.status(500).json({ error: "Server error." });
+    }
+});
+
+router.get("/get-color-settings", async (req, res) => {
+    try {
+        const { user_id } = req.query;
+
+        const userRef = Users.doc(user_id);
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const colorSettings = userDoc.data().colorSettings || {};
+
+        res.status(200).json({ colorSettings });
+    } catch (e) {
+        console.error(e.message);
+        res.status(500).json({ error: "Server error." });
+    }
+});
+
 
 router.put("/add-bank-entry", async (req, res) => {
     try {
@@ -69,7 +112,7 @@ router.put("/add-bank-entry", async (req, res) => {
         const yearsRef = userRef.collection("years");
         const yearDocRef = yearsRef.doc(year.toString());
         const yearDoc = await yearDocRef.get();
-        const yearData = yearDoc.data();
+        const yearData = yearDoc.exists ? yearDoc.data() : {};
 
         // Update the specific bankName data
         yearData[bankName] = data;

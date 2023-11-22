@@ -37,6 +37,38 @@ export function useUserBanks() {
 
     };
 
+    const fetchColorSettings = async () => {
+        try {
+            const response = await axios.get(
+                `${backendUrl}/api/users/get-color-settings`, {
+                params: {
+                    user_id: user.user.uid
+                }
+            });
+
+            return response.data.colorSettings;
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    const changeCategoryColor = async (categoryName, newColor) => {
+        try {
+            const body = {
+                user_id: user.user.uid,
+                categoryName: categoryName,
+                newColor: newColor
+            }
+
+            await axios.post(
+                `${backendUrl}/api/users/change-category-color`,
+                body
+            );
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
     const addBankEntry = async (year, bankName, data) => {
         try {
             const body = {
@@ -108,6 +140,8 @@ export function useUserBanks() {
     return {
         addBank,
         fetchBankNames,
+        fetchColorSettings,
+        changeCategoryColor,
         addBankEntry,
         fetchBankData,
         deleteBankEntries,

@@ -29,6 +29,7 @@ const defaultRow = {
 };
 
 const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
+    console.log(rowData);
     const gridRef = useRef();
     const [data, setData] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
@@ -52,6 +53,7 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
         { field: 'December', headerName: 'December' }
     ]);
 
+
     const defaultColDef = useMemo(() => {
         return {
             flex: 1,
@@ -64,7 +66,6 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
 
     const handleCellValueChange = async (params) => {
         const { colDef, newValue } = params;
-        console.log('params: ', params);
         const updatedRowData = rowData.map((row) => {
             if (row.month === rowData.month && row.category === rowData.category) {
                 return { ...row, [colDef.field]: newValue };
@@ -72,7 +73,6 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
             return row;
         });
 
-        console.log(updatedRowData);
         updateRowData(updatedRowData);
         await addBankEntry(selectedYear, bankName, updatedRowData);
     }
@@ -96,6 +96,8 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
                 December: null,
             },
         ];
+
+        console.log(updatedData);
 
         updateRowData(updatedData);
     }
@@ -137,11 +139,11 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
         await deleteBankEntries(bankName, selectedRowData);
     }
 
-    const handleModalSubmit = async (e) => {
+    const handleModalSubmit = (e) => {
         e.preventDefault();
 
         try {
-            await addRow({ categoryName: category });
+            addRow({ categoryName: category });
             setModalOpen(false);
         } catch (error) {
             console.error("Error adding a bank:", error);
@@ -186,7 +188,7 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
 
                 <input type="text" name='category' id="category-input" value={category} onChange={handleInputChange} />
 
-                <button className="modal-button" onClick={handleModalSubmit}>Add Entry</button>
+                <button className="modal-button" onClick={handleModalSubmit}>Add Category</button>
             </Modal>
         </div>
     );
