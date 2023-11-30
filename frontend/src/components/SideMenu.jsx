@@ -3,6 +3,8 @@ import Modal from 'react-modal';
 
 import { useUserBanks } from "../hooks/useBankData";
 
+import menuIcon from "../images/menu-icon.png";
+
 import "../styles/side-menu.css";
 import "../styles/modal.css";
 
@@ -11,6 +13,7 @@ Modal.setAppElement("#root");
 
 const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentSelection }) => {
     const { addBank } = useUserBanks();
+    const [isOpen, setIsOpen] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [fadeAway, setFadeAway] = useState(false);
     const [bankName, setBankName] = useState('');
@@ -53,7 +56,6 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
                 return;
             }
 
-
             await addBank(bankName);
             updateBankNames(bankName);
             setBankName('');
@@ -65,7 +67,10 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
 
     return (
         <div className="menu">
-            <button className="menu-button" onClick={handleModalOpen}>Add bank</button>
+            <div className="button-container">
+                <button className="menu-button" onClick={handleModalOpen}>Add bank</button>
+                <img className="menu-icon" src={menuIcon} alt="close" />
+            </div>
             <ul className="menu-list">
                 <li className={`menu-item ${currentSelection === 'All' ? 'selected-menu-item' : ''} `}
                     onClick={() => handleItemClick('All')}
