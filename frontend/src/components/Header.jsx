@@ -22,7 +22,11 @@ const Header = ({ title }) => {
     return (
         <div className="header">
             <h1 className="header-title">{ title === 'All' ? 'All Banks' : title }</h1>
-            <button type="button" className="link-button" onClick={handleSignOut}>
+            <button 
+                type="button"
+                className="header-button"
+                onClick={handleSignOut}
+            >
                 Sign Out
             </button>
         </div>

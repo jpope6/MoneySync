@@ -140,6 +140,11 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
         e.preventDefault();
 
         try {
+            if (!category) {
+                return;
+            }
+
+
             addRow({ categoryName: category });
             setModalOpen(false);
             setCategory('');
@@ -188,6 +193,7 @@ const BankTable = ({ bankName, rowData, updateRowData, selectedYear }) => {
                     type="text"
                     name='category'
                     id="category-input"
+                    placeholder="Add a category"
                     value={category}
                     onChange={handleInputChange}
                     autoComplete='off'

@@ -60,6 +60,10 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
                 return;
             }
 
+            if (!bankName) {
+                return
+            }
+
             await addBank(bankName);
             updateBankNames(bankName);
             setBankName('');
@@ -129,7 +133,14 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
                         background: "rgba(0, 0, 0, 0.7)",
                     },
                 }}
+
             >
+                <div className="modal-header">
+                    <h2>Add New Bank</h2>
+                    <button className="close-button" onClick={handleModalClose}>
+                        X
+                    </button>
+                </div>
                 <div>
                     <input
                         type="text"
@@ -140,8 +151,13 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
                     />
                     {!isUniqueBankName && <p style={{ color: 'red' }}>Bank name already exists!</p>}
                 </div>
-                <button type="submit" onClick={handleModalSubmit}>Submit</button>
-                <button className="modal-button" onClick={handleModalClose}>Close Modal</button>
+                <button
+                    className="modal-button"
+                    type="submit"
+                    onClick={handleModalSubmit}
+                >
+                    Add
+                </button>
             </Modal>
         </div>
     );
