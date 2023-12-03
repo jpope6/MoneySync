@@ -2,8 +2,17 @@
 	background-color: var(--primary-background-color);
 	display: flex;
 	flex-direction: column;
-	width: 250px;
 	padding-top: 2rem;
+	width: 0;
+}
+
+.menu.open {
+	width: 250px;
+}
+
+.menu.close {
+	width: fit-content;
+	padding: 3rem 1rem 1rem 1rem;
 }
 
 .menu-list {

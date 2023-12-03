@@ -33,6 +33,10 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
         }, 200);
     }
 
+    const handleSideMenuClose = () => {
+        setIsOpen((isOpen) => !isOpen);
+    }
+
     const handleItemClick = (menuItem) => {
         updateCurrentSelection(menuItem);
     }
@@ -66,26 +70,56 @@ const SideMenu = ({ bankNames, updateBankNames, currentSelection, updateCurrentS
     }
 
     return (
-        <div className="menu">
-            <div className="button-container">
-                <button className="menu-button" onClick={handleModalOpen}>Add bank</button>
-                <img className="menu-icon" src={menuIcon} alt="close" />
-            </div>
-            <ul className="menu-list">
-                <li className={`menu-item ${currentSelection === 'All' ? 'selected-menu-item' : ''} `}
-                    onClick={() => handleItemClick('All')}
-                >All</li>
-                {bankNames.map((bankName, index) => (
-                    <li
-                        key={index}
-                        className={`menu-item ${currentSelection === bankName ? 'selected-menu-item' : ''} `}
-                        onClick={() => handleItemClick(bankName)}
-                    >
-                        {bankName}
-                    </li>
-                ))}
+        <div className={`menu ${isOpen ? 'open' : 'close'}`}>
+            {isOpen ?
+                <>
+                    <div className="button-container">
+                        <button className="menu-button" onClick={handleModalOpen}>Add bank</button>
+                        <img
+                            className="menu-icon"
+                            src={menuIcon}
+                            alt="close"
+                            onClick={handleSideMenuClose}
+                        />
+                    </div>
+                    <ul className="menu-list">
+                        <li
+                            className={
+                                `menu-item ${currentSelection === 'All'
+                                    ?
+                                    'selected-menu-item'
+                                    :
+                                    ''} `
+                            }
+                            onClick={() => handleItemClick('All')}
+                        >
+                            All
+                        </li>
 
-            </ul>
+                        {bankNames.map((bankName, index) => (
+                            <li
+                                key={index}
+                                className={
+                                    `menu-item ${currentSelection === bankName
+                                        ? 'selected-menu-item'
+                                        : ''} `
+                                }
+                                onClick={() => handleItemClick(bankName)}
+                            >
+                                {bankName}
+                            </li>
+                        ))}
+
+                    </ul>
+                </>
+                :
+                <img
+                    className="menu-icon"
+                    src={menuIcon}
+                    alt="close"
+                    onClick={handleSideMenuClose}
+                />
+            }
 
             <Modal
                 isOpen={modalOpen}
