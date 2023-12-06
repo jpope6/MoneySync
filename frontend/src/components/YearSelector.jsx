@@ -22,6 +22,7 @@ const YearSelector = ({ selectedYear, setSelectedYear, setSelectedToMonth, setSe
             <button
                 onClick={handleDecrement}
                 disabled={selectedYear <= currentYear - 30}
+                className={`button ${selectedYear <= currentYear - 30 ? 'disabled' : ''}`}
             >
                 &lt;
             </button>
@@ -31,6 +32,7 @@ const YearSelector = ({ selectedYear, setSelectedYear, setSelectedToMonth, setSe
             <button
                 onClick={handleIncrement}
                 disabled={selectedYear >= currentYear}
+                className={`button ${selectedYear >= currentYear ? 'disabled' : ''}`}
             >
                 &gt;
             </button>

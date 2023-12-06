@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
     LineChart,
     Line,
@@ -75,7 +75,7 @@ const BankGraph = ({ data, colorData, updateColorSettings, selectedDateRange }) 
 
     return (
         <>
-            <ResponsiveContainer width='100%' height={700}>
+            <ResponsiveContainer width='100%' height={600}>
                 <LineChart
                     data={chartData}
                     margin={{
