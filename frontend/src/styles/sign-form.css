@@ -41,6 +41,10 @@
 	margin-top: 40px;
 }
 
+.sign-input {
+	margin: 0;
+}
+
 .sign-button {
 	padding: 12px;
 	width: 100%;
